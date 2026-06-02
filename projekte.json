@@ -1,0 +1,154 @@
+{
+  "config": {
+    "appName": "WeBuild",
+    "location": "Hohenmölsen",
+    "defaultCenter": { "lat": 51.1496, "lng": 12.0989, "zoom": 13 }
+  },
+  "table": {
+    "columns": [
+      { "key": "id", "label": "ID", "type": "string" },
+      { "key": "icon", "label": "Icon", "type": "string" },
+      { "key": "title", "label": "Titel", "type": "string" },
+      { "key": "category", "label": "Kategorie", "type": "string" },
+      { "key": "status", "label": "Status", "type": "string" },
+      { "key": "address", "label": "Adresse", "type": "string" },
+      { "key": "lat", "label": "Lat", "type": "number" },
+      { "key": "lng", "label": "Lng", "type": "number" },
+      { "key": "budgetEUR", "label": "Budget (EUR)", "type": "number" },
+      { "key": "start", "label": "Start", "type": "string" },
+      { "key": "end", "label": "Fertigstellung", "type": "string" },
+      { "key": "short", "label": "Kurzbeschreibung", "type": "string" },
+      { "key": "why", "label": "Warum?", "type": "string" },
+      { "key": "traffic", "label": "Verkehr", "type": "string" },
+      { "key": "trades", "label": "Gewerke", "type": "string[]" },
+      { "key": "image", "label": "Bild (URL)", "type": "string" },
+      { "key": "beforeImage", "label": "Vorher-Bild (URL)", "type": "string" },
+      { "key": "afterImage", "label": "Nachher-Bild (URL)", "type": "string" },
+      { "key": "milestones", "label": "Meilensteine (Zeitstrahl)", "type": "json" }
+    ],
+    "rows": [
+      {
+        "id": "marktplatz-sanierung",
+        "icon": "🏛️",
+        "title": "Aufwertung und barrierefreier Umbau Marktplatz",
+        "category": "Städtebau & Zentrum",
+        "status": "In Planung",
+        "address": "Marktplatz, 06679 Hohenmölsen",
+        "lat": 51.1499,
+        "lng": 12.0984,
+        "budgetEUR": 1200000,
+        "start": "2026",
+        "end": "2027",
+        "short": "Stärkung der Altstadt als multifunktionales Zentrum für alle Generationen.",
+        "why": "Belebung der Innenstadt, mehr Aufenthaltsqualität, Barrierefreiheit und Stärkung von Handel/Gastronomie.",
+        "traffic": "Während der Bauphase zeitweise Sperrung am Marktplatz; Umleitungen/Ausweichparkplätze werden ausgeschildert.",
+        "trades": ["Tiefbau", "Pflaster/Wegebau", "Grünflächen", "Beleuchtung"],
+        "image": "./assets/marktplatz.png",
+        "beforeImage": "./assets/marktplatz.png",
+        "afterImage": "./assets/marktplatz.png",
+        "milestones": [
+          {
+            "key": "planung",
+            "date": "2026 Q2",
+            "title": "Planung & Beteiligung",
+            "text": "Entwurfsplanung, Abstimmung und Bürgerbeteiligung.",
+            "image": "./assets/marktplatz.png"
+          },
+          {
+            "key": "ausschreibung",
+            "date": "2026 Q4",
+            "title": "Ausschreibung",
+            "text": "Vergabe der Bauleistungen und Vorbereitung der Baustelle.",
+            "image": "./assets/marktplatz.png"
+          },
+          {
+            "key": "bau",
+            "date": "2027",
+            "title": "Bauphase",
+            "text": "Umbau der Flächen, Beleuchtung und Begrünung.",
+            "image": "./assets/marktplatz.png"
+          },
+          {
+            "key": "abschluss",
+            "date": "Ende 2027",
+            "title": "Abschluss",
+            "text": "Eröffnung und Inbetriebnahme des neuen Marktplatzes.",
+            "image": "./assets/marktplatz.png"
+          }
+        ]
+      },
+      {
+        "id": "erholung-mondsee",
+        "icon": "🏖️",
+        "title": "Attraktivierung Erholungspark Mondsee",
+        "category": "Naherholung & Tourismus",
+        "status": "Konzeptphase",
+        "address": "Erholungspark Mondsee, 06679 Hohenmölsen",
+        "lat": 51.1614,
+        "lng": 12.1227,
+        "budgetEUR": null,
+        "start": "2027",
+        "end": "2028",
+        "short": "Ausbau der touristischen Infrastruktur am Tagebau-Folgesee.",
+        "why": "Tourismus stärken, Attraktivität erhöhen und neue wirtschaftliche Impulse schaffen.",
+        "traffic": "Keine wesentlichen Einschränkungen im Stadtverkehr; Zufahrt zum See bleibt geöffnet.",
+        "trades": ["Konzept/Planung", "Sanitär", "Wegebau"],
+        "image": "./assets/mondsee.png",
+        "beforeImage": "./assets/mondsee_vorher.png",
+        "afterImage": "./assets/mondsee.png",
+        "milestones": [
+          {
+            "key": "konzept",
+            "date": "2026/27",
+            "title": "Konzept",
+            "text": "Zielbild, Maßnahmenliste und Kostenschätzung.",
+            "image": "./assets/mondsee.png"
+          },
+          {
+            "key": "umsetzung",
+            "date": "2028",
+            "title": "Umsetzung",
+            "text": "Schrittweise Modernisierung der Infrastruktur.",
+            "image": "./assets/mondsee.png"
+          }
+        ]
+      },
+      {
+        "id": "quartier-agricolastrasse",
+        "icon": "🏡",
+        "title": "Quartiersaufwertung Agricolastraße",
+        "category": "Wohnumfeld",
+        "status": "Laufend",
+        "address": "Agricolastraße, 06679 Hohenmölsen",
+        "lat": 51.1547,
+        "lng": 12.1049,
+        "budgetEUR": 350000,
+        "start": "2025",
+        "end": "2026",
+        "short": "Verbesserung des Wohnumfeldes in den Quartieren.",
+        "why": "Mehr Aufenthaltsqualität, sichere Wege, Spiel- und Grünflächen sowie bessere Barrierefreiheit.",
+        "traffic": "Abschnittsweise Einschränkungen einzelner Wege; keine Vollsperrungen.",
+        "trades": ["Grünflächen", "Spielgeräte", "Wegebau"],
+        "image": "./assets/quartier.png",
+        "beforeImage": "./assets/quartier.png",
+        "afterImage": "./assets/quartier.png",
+        "milestones": [
+          {
+            "key": "start",
+            "date": "2025",
+            "title": "Start",
+            "text": "Bestandsaufnahme und erste Teilmaßnahmen.",
+            "image": "./assets/quartier.png"
+          },
+          {
+            "key": "spiel",
+            "date": "2026",
+            "title": "Spiel- & Grünflächen",
+            "text": "Neue Sitzbereiche, Spielgeräte und Wege.",
+            "image": "./assets/quartier.png"
+          }
+        ]
+      }
+    ]
+  }
+}

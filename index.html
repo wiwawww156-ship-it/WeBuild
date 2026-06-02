@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WeBuild - Bürger-Dashboard</title>
+  <link rel="icon" href="./assets/logo.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wb: {
+              primary: '#1E4E79',
+              primary2: '#2E6AA3',
+              ink: '#0B1B2B',
+              soft: '#EEF5FB',
+              ring: '#93C5FD'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    .no-select { user-select: none; -webkit-user-select: none; }
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    body { overflow-x: hidden; }
+    #map { height: 360px; }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800">
+  <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="closeDetail()">
+          <div class="w-10 h-10 rounded-xl bg-wb-soft border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
+            <img src="./assets/logo.png" alt="WeBuild" class="w-9 h-9 object-contain" />
+          </div>
+          <span class="font-extrabold text-lg md:text-xl tracking-tight truncate text-wb-ink">
+            <span id="app-name">WeBuild</span>
+            <span id="location-name" class="text-wb-primary2 font-semibold text-base"></span>
+          </span>
+        </div>
+        <div class="flex gap-2 md:gap-3">
+          <button id="modeToggleBtn" onclick="toggleMode()"
+            class="text-sm font-semibold bg-white text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-50 flex items-center gap-2 border border-slate-200">
+            <span id="modeToggleIcon" class="text-base">🏛️</span>
+            <span id="modeToggleLabel" class="hidden md:inline">Verwaltung</span>
+          </button>
+          <button onclick="toggleMap()" class="text-sm font-medium text-slate-600 hover:text-wb-primary2 flex items-center gap-1">
+            <span class="hidden md:inline">🗺️ Karte</span>
+            <span class="md:hidden text-lg">🗺️</span>
+          </button>
+          <button onclick="readAloud()"
+            class="text-sm font-medium bg-wb-soft text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-100 flex items-center gap-1 border border-slate-200">
+            🔊 <span class="hidden md:inline">Vorlesen</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div id="map-panel" class="hidden mb-6 bg-white border border-slate-200 rounded-2xl p-4">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <div class="font-semibold">Karte</div>
+          <div class="text-sm text-slate-500">Pins erscheinen, wenn Lat/Lng in `projekte.json` gesetzt sind.</div>
+        </div>
+        <button onclick="toggleMap()" class="text-sm font-medium text-slate-600 hover:text-wb-primary2">Schließen</button>
+      </div>
+      <div class="mt-4 rounded-xl overflow-hidden border border-slate-200">
+        <div id="map"></div>
+      </div>
+    </div>
+
+    <div id="admin-view" class="hidden fade-in">
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 md:p-6">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Verwaltungsansicht (Demo)</h1>
+            <p class="text-slate-500 text-sm mt-1">
+              Hier kann man sehen, wie neue Projektdaten eingegeben werden könnten. Änderungen werden nur im Browser gehalten.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="addAdminRow()"
+              class="text-sm font-semibold bg-wb-primary text-white rounded-xl px-4 py-2.5 hover:bg-wb-primary2">
+              + Neues Projekt
+            </button>
+            <button onclick="copyExportJson()"
+              class="text-sm font-semibold bg-white border border-slate-200 rounded-xl px-4 py-2.5 hover:bg-slate-50">
+              JSON exportieren (Copy)
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-5 overflow-x-auto border border-slate-200 rounded-2xl">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50">
+              <tr id="adminTableHead"></tr>
+            </thead>
+            <tbody id="adminTableBody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 text-sm text-slate-600">
+          Tipp: Für Pins auf der Karte <span class="font-mono">lat</span> und <span class="font-mono">lng</span> setzen.
+        </div>
+      </div>
+    </div>
+
+    <div id="dashboard-view" class="fade-in">
+      <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900">Stadtentwicklungsprojekte</h1>
+          <p class="text-slate-500 text-sm mt-1">
+            Daten kommen aus <span class="font-mono">projekte.json</span> (Bereich <span class="font-mono">table.rows</span>).
+          </p>
+        </div>
+        <div class="w-full md:w-[520px] grid grid-cols-1 md:grid-cols-3 gap-2">
+          <label class="md:col-span-2 relative">
+            <span class="sr-only">Suche</span>
+            <input id="search"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+              placeholder="Suche: Titel, Adresse, Kategorie, Status …" />
+          </label>
+          <select id="statusFilter"
+            class="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-wb-ring">
+            <option value="">Alle Status</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <section class="lg:col-span-2">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold">Liste</div>
+            <div id="resultCount" class="text-sm text-slate-500"></div>
+          </div>
+          <div id="projectList" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <aside class="lg:col-span-1">
+          <div class="bg-white border border-slate-200 rounded-2xl p-4">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold">Favoriten</div>
+              <div class="text-xs text-slate-500">max. 3</div>
+            </div>
+            <div id="favoritesList" class="mt-3 space-y-2"></div>
+            <div class="mt-4 pt-4 border-t border-slate-200">
+              <div class="font-semibold">Daten-Input (Tabelle)</div>
+              <div class="text-sm text-slate-600 mt-1">
+                Pflege deine Projekte in <span class="font-mono">projekte.json → table.rows</span>.
+                Spalten sind in <span class="font-mono">table.columns</span> dokumentiert.
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div id="detail-view" class="hidden">
+      <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <div class="p-4 md:p-6 border-b border-slate-200 flex items-start justify-between gap-4">
+          <div>
+            <div class="text-sm text-slate-500" id="detail-meta"></div>
+            <div class="text-2xl font-bold mt-1" id="detail-title"></div>
+            <div class="text-sm text-slate-600 mt-2" id="detail-address"></div>
+          </div>
+          <button onclick="closeDetail()" class="text-sm font-medium text-slate-600 hover:text-wb-primary2">Zurück</button>
+        </div>
+        <div class="p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="md:col-span-2">
+            <img id="detail-image" class="w-full h-56 md:h-72 object-cover rounded-xl border border-slate-200 bg-slate-100" alt="" />
+            <div id="milestone-caption" class="mt-2 text-xs text-slate-500"></div>
+
+            <div id="beforeAfterPanel" class="hidden mt-4">
+              <div class="flex items-end justify-between gap-4">
+                <div>
+                  <div class="font-semibold">Vorher / Nachher</div>
+                  <div class="text-xs text-slate-500 mt-1">Ziehe den Regler, um den Vergleich zu sehen.</div>
+                </div>
+                <div class="text-xs text-slate-500"><span id="baPct">50</span>%</div>
+              </div>
+
+              <div class="mt-3">
+                <div class="relative w-full h-56 md:h-72 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
+                  <img id="baAfter" class="absolute inset-0 w-full h-full object-cover" alt="" />
+                  <div id="baClip" class="absolute inset-0 overflow-hidden" style="width: 50%;">
+                    <img id="baBefore" class="absolute inset-0 w-full h-full object-cover" alt="" />
+                  </div>
+                  <div id="baHandle" class="absolute top-0 bottom-0" style="left: 50%;">
+                    <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2">
+                      <div class="w-10 h-10 rounded-full bg-white/90 border border-slate-200 shadow-sm flex items-center justify-center">
+                        <div class="w-1 h-6 rounded bg-wb-primary2"></div>
+                      </div>
+                      <div class="mt-2 flex gap-2 justify-center text-[11px] text-white drop-shadow">
+                        <span class="px-2 py-0.5 rounded-full bg-black/40">Vorher</span>
+                        <span class="px-2 py-0.5 rounded-full bg-black/40">Nachher</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <input id="baRange" type="range" min="0" max="100" value="50"
+                  class="mt-3 w-full"
+                  style="accent-color: #2E6AA3;"
+                  oninput="onBeforeAfterChange(this.value)" />
+              </div>
+            </div>
+
+            <div id="milestone-panel" class="mt-4">
+              <div class="flex items-end justify-between gap-4">
+                <div>
+                  <div class="font-semibold">Zeitstrahl</div>
+                  <div class="text-xs text-slate-500 mt-1">Klicke eine Etappe – Bild & Text wechseln.</div>
+                </div>
+                <div class="text-xs text-slate-500">↔ scroll</div>
+              </div>
+
+              <div class="mt-3 relative">
+                <div class="absolute left-0 right-0 top-[18px] h-[3px] rounded-full bg-gradient-to-r from-wb-primary2 via-sky-300 to-emerald-200 opacity-60"></div>
+                <div class="absolute left-0 right-0 top-[18px] h-[3px] rounded-full opacity-50 blur-md bg-gradient-to-r from-wb-primary2 via-sky-300 to-emerald-200"></div>
+
+                <div id="detail-milestones"
+                  class="relative flex items-stretch justify-center gap-3 overflow-x-auto py-2 px-2 hide-scrollbar snap-x snap-mandatory"></div>
+              </div>
+            </div>
+
+            <div class="mt-4 space-y-4">
+              <div>
+                <div class="font-semibold">Kurzbeschreibung</div>
+                <div class="text-sm text-slate-700 mt-1" id="detail-short"></div>
+              </div>
+              <div>
+                <div class="font-semibold">Warum?</div>
+                <div class="text-sm text-slate-700 mt-1" id="detail-why"></div>
+              </div>
+              <div>
+                <div class="font-semibold">Verkehr / Einschränkungen</div>
+                <div class="text-sm text-slate-700 mt-1" id="detail-traffic"></div>
+              </div>
+            </div>
+          </div>
+          <div class="md:col-span-1">
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div class="font-semibold">Infos</div>
+                <button id="detail-fav-btn" onclick="toggleFavorite(activeProjectId)"
+                  class="text-sm font-medium rounded-lg px-2.5 py-1.5 border border-slate-200 bg-white hover:bg-slate-100"></button>
+              </div>
+              <div class="mt-3 space-y-2 text-sm">
+                <div class="flex justify-between gap-3"><span class="text-slate-500">Status</span><span id="detail-status" class="font-medium"></span></div>
+                <div class="flex justify-between gap-3"><span class="text-slate-500">Kategorie</span><span id="detail-category" class="font-medium"></span></div>
+                <div class="flex justify-between gap-3"><span class="text-slate-500">Budget</span><span id="detail-budget" class="font-medium"></span></div>
+                <div class="flex justify-between gap-3"><span class="text-slate-500">Zeitraum</span><span id="detail-dates" class="font-medium"></span></div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-200">
+                <div class="font-semibold">Ausführende Gewerke</div>
+                <div id="detail-trades" class="mt-2 flex flex-wrap gap-2"></div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-200">
+                <button onclick="focusOnMap(activeProjectId)"
+                  class="w-full text-sm font-semibold bg-wb-primary text-white rounded-xl py-2.5 hover:bg-wb-primary2">
+                  Auf Karte anzeigen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let APP_MODE = 'citizen'; // 'citizen' | 'admin'
+    let DATA = null;
+    let TABLE_ROWS = [];
+    let PROJECTS = [];
+    let activeProjectId = null;
+    let activeMilestoneKeyByProject = new Map(); // projectId -> milestoneKey
+    let map = null;
+    let markersById = new Map();
+
+    const FAVORITES_KEY = 'webuild:favorites:v1';
+
+    function getFavorites() {
+      try {
+        const raw = localStorage.getItem(FAVORITES_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function setFavorites(ids) {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(ids.slice(0, 3)));
+    }
+
+    function isFavorite(id) {
+      return getFavorites().includes(id);
+    }
+
+    function toggleFavorite(id) {
+      if (!id) return;
+      const favs = getFavorites();
+      const idx = favs.indexOf(id);
+      if (idx >= 0) favs.splice(idx, 1);
+      else {
+        if (favs.length >= 3) favs.pop();
+        favs.unshift(id);
+      }
+      setFavorites(favs);
+      render();
+      if (activeProjectId) openDetail(activeProjectId, { scroll: false });
+    }
+
+    function formatEUR(value) {
+      if (value === null || value === undefined || value === '') return '—';
+      const num = Number(value);
+      if (!Number.isFinite(num)) return String(value);
+      return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(num);
+    }
+
+    function safeText(v) {
+      return (v === null || v === undefined) ? '' : String(v);
+    }
+
+    function projectFromRow(row) {
+      return {
+        id: safeText(row.id).trim(),
+        icon: safeText(row.icon || '🏗️'),
+        title: safeText(row.title),
+        category: safeText(row.category),
+        status: safeText(row.status),
+        address: safeText(row.address),
+        lat: (row.lat === null || row.lat === undefined || row.lat === '') ? null : Number(row.lat),
+        lng: (row.lng === null || row.lng === undefined || row.lng === '') ? null : Number(row.lng),
+        budgetEUR: (row.budgetEUR === null || row.budgetEUR === undefined || row.budgetEUR === '') ? null : Number(row.budgetEUR),
+        start: safeText(row.start),
+        end: safeText(row.end),
+        short: safeText(row.short),
+        why: safeText(row.why),
+        traffic: safeText(row.traffic),
+        trades: Array.isArray(row.trades) ? row.trades.map(safeText) : [],
+        image: safeText(row.image),
+        beforeImage: safeText(row.beforeImage),
+        afterImage: safeText(row.afterImage),
+        milestones: Array.isArray(row.milestones) ? row.milestones.map(m => ({
+          key: safeText(m?.key || ''),
+          date: safeText(m?.date || ''),
+          title: safeText(m?.title || ''),
+          text: safeText(m?.text || ''),
+          image: safeText(m?.image || '')
+        })).filter(m => m.key || m.title || m.date) : []
+      };
+    }
+
+    function toggleMap() {
+      if (APP_MODE !== 'citizen') return;
+      const panel = document.getElementById('map-panel');
+      const isHidden = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden', !isHidden);
+      if (isHidden) ensureMap();
+      if (isHidden) setTimeout(() => map && map.invalidateSize(), 50);
+    }
+
+    function setMode(mode) {
+      APP_MODE = mode;
+      const isAdmin = APP_MODE === 'admin';
+
+      // top-right toggle label/icon
+      document.getElementById('modeToggleIcon').textContent = isAdmin ? '👥' : '🏛️';
+      document.getElementById('modeToggleLabel').textContent = isAdmin ? 'Bürger' : 'Verwaltung';
+
+      // panels
+      document.getElementById('admin-view').classList.toggle('hidden', !isAdmin);
+      document.getElementById('map-panel').classList.toggle('hidden', true);
+
+      // citizen views
+      document.getElementById('dashboard-view').classList.toggle('hidden', isAdmin || !!activeProjectId);
+      document.getElementById('detail-view').classList.toggle('hidden', isAdmin || !activeProjectId);
+
+      if (isAdmin) {
+        window.speechSynthesis?.cancel?.();
+        renderAdmin();
+      } else {
+        render();
+      }
+    }
+
+    function toggleMode() {
+      setMode(APP_MODE === 'citizen' ? 'admin' : 'citizen');
+    }
+
+    function closeDetail() {
+      activeProjectId = null;
+      document.getElementById('detail-view').classList.add('hidden');
+      if (APP_MODE === 'citizen') document.getElementById('dashboard-view').classList.remove('hidden');
+      window.speechSynthesis?.cancel?.();
+    }
+
+    function openDetail(id, opts = { scroll: true }) {
+      if (APP_MODE !== 'citizen') return;
+      const p = PROJECTS.find(x => x.id === id);
+      if (!p) return;
+      activeProjectId = id;
+
+      document.getElementById('dashboard-view').classList.add('hidden');
+      document.getElementById('detail-view').classList.remove('hidden');
+
+      document.getElementById('detail-meta').textContent = `${p.icon} ${p.category || '—'} • ${p.status || '—'}`;
+      document.getElementById('detail-title').textContent = p.title || '—';
+      document.getElementById('detail-address').textContent = p.address || '—';
+
+      // pick active milestone (default: first)
+      if (p.milestones?.length) {
+        const curKey = activeMilestoneKeyByProject.get(p.id);
+        const firstKey = (p.milestones[0]?.key || '').trim();
+        const effectiveKey = curKey || firstKey || `${p.id}:m0`;
+        activeMilestoneKeyByProject.set(p.id, effectiveKey);
+      }
+
+      renderMilestones(p);
+      renderMilestoneMedia(p);
+      renderBeforeAfter(p);
+
+      document.getElementById('detail-short').textContent = p.short || '—';
+      document.getElementById('detail-why').textContent = p.why || '—';
+      document.getElementById('detail-traffic').textContent = p.traffic || '—';
+
+      document.getElementById('detail-status').textContent = p.status || '—';
+      document.getElementById('detail-category').textContent = p.category || '—';
+      document.getElementById('detail-budget').textContent = formatEUR(p.budgetEUR);
+      const dates = [p.start, p.end].filter(Boolean).join(' → ');
+      document.getElementById('detail-dates').textContent = dates || '—';
+
+      const tradesWrap = document.getElementById('detail-trades');
+      tradesWrap.innerHTML = '';
+      (p.trades?.length ? p.trades : ['—']).forEach(t => {
+        const el = document.createElement('span');
+        el.className = 'text-xs font-semibold px-2 py-1 rounded-full bg-white border border-slate-200 text-slate-700';
+        el.textContent = t;
+        tradesWrap.appendChild(el);
+      });
+
+      const favBtn = document.getElementById('detail-fav-btn');
+      favBtn.textContent = isFavorite(id) ? '★ Entfernen' : '☆ Favorit';
+
+      if (opts.scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function getActiveMilestone(p) {
+      if (!p?.milestones?.length) return null;
+      const key = activeMilestoneKeyByProject.get(p.id);
+      if (!key) return p.milestones[0] || null;
+      return p.milestones.find(m => (m.key || '') === key) || p.milestones[0] || null;
+    }
+
+    function renderMilestoneMedia(p) {
+      const img = document.getElementById('detail-image');
+      const cap = document.getElementById('milestone-caption');
+
+      const ms = getActiveMilestone(p);
+      const src = ms?.image || p.image || '';
+
+      if (src) {
+        img.src = src;
+        img.alt = p.title || '';
+      } else {
+        img.removeAttribute('src');
+        img.alt = '';
+      }
+
+      if (ms) {
+        const parts = [ms.date, ms.title].filter(Boolean);
+        cap.textContent = parts.length ? `Etappe: ${parts.join(' – ')}` : '';
+      } else {
+        cap.textContent = '';
+      }
+    }
+
+    function renderBeforeAfter(p) {
+      const panel = document.getElementById('beforeAfterPanel');
+      const before = (p.beforeImage || '').trim();
+      const after = (p.afterImage || '').trim();
+      if (!(before && after)) {
+        panel.classList.add('hidden');
+        return;
+      }
+
+      panel.classList.remove('hidden');
+      const beforeEl = document.getElementById('baBefore');
+      const afterEl = document.getElementById('baAfter');
+      beforeEl.src = before;
+      afterEl.src = after;
+      beforeEl.alt = `${p.title} (Vorher)`;
+      afterEl.alt = `${p.title} (Nachher)`;
+
+      onBeforeAfterChange(50, { setRange: true });
+    }
+
+    function onBeforeAfterChange(value, opts = { setRange: false }) {
+      const v = Math.max(0, Math.min(100, Number(value)));
+      const clip = document.getElementById('baClip');
+      const handle = document.getElementById('baHandle');
+      const pct = document.getElementById('baPct');
+      const range = document.getElementById('baRange');
+
+      if (clip) clip.style.width = `${v}%`;
+      if (handle) handle.style.left = `${v}%`;
+      if (pct) pct.textContent = String(v);
+      if (opts?.setRange && range) range.value = String(v);
+    }
+
+    function selectMilestone(projectId, milestoneKey) {
+      activeMilestoneKeyByProject.set(projectId, milestoneKey);
+      const p = PROJECTS.find(x => x.id === projectId);
+      if (!p) return;
+      renderMilestones(p);
+      renderMilestoneMedia(p);
+    }
+
+    function renderMilestones(p) {
+      const wrap = document.getElementById('detail-milestones');
+      wrap.innerHTML = '';
+
+      const milestones = p.milestones || [];
+      if (!milestones.length) {
+        document.getElementById('milestone-panel')?.classList?.add('hidden');
+        return;
+      }
+      document.getElementById('milestone-panel')?.classList?.remove('hidden');
+
+      const active = getActiveMilestone(p);
+      const activeKey = active?.key || '';
+
+      milestones.forEach((m, idx) => {
+        const key = (m.key || '').trim() || `${p.id}:m${idx}`;
+        if (!m.key) m.key = key;
+
+        const btn = document.createElement('button');
+        const isActive = key === activeKey;
+        btn.className = `snap-center shrink-0 w-[240px] md:w-[260px] text-left rounded-2xl border transition-all ${
+          isActive
+            ? 'border-wb-primary2 bg-white shadow-sm ring-2 ring-wb-ring'
+            : 'border-slate-200 bg-white hover:bg-wb-soft'
+        }`;
+        btn.onclick = () => selectMilestone(p.id, key);
+        btn.innerHTML = `
+          <div class="p-3">
+            <div class="flex items-start gap-3">
+              <div class="mt-1 relative">
+                <div class="w-4 h-4 rounded-full ${isActive ? 'bg-wb-primary2' : 'bg-slate-300'}"></div>
+                ${isActive ? '<div class="absolute inset-0 rounded-full bg-sky-400/30 blur-[8px]"></div>' : ''}
+              </div>
+              <div class="min-w-0">
+                <div class="text-xs font-semibold text-slate-600">${escapeHtml(m.date || '')}</div>
+                <div class="font-bold leading-snug mt-0.5">${escapeHtml(m.title || 'Etappe')}</div>
+              </div>
+            </div>
+            ${m.text ? `<div class="text-xs text-slate-600 mt-2 line-clamp-2">${escapeHtml(m.text)}</div>` : ''}
+            <div class="mt-3 flex items-center justify-between">
+              <div class="text-[11px] text-slate-500">${isActive ? 'Aktiv' : 'Ansehen'}</div>
+              <div class="text-[11px] font-semibold ${isActive ? 'text-wb-primary2' : 'text-slate-600'}">Bild ↗</div>
+            </div>
+          </div>
+        `;
+        wrap.appendChild(btn);
+      });
+
+      // auto scroll active into view
+      const activeBtn = wrap.querySelector('button.ring-2');
+      if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+
+    function readAloud() {
+      if (!activeProjectId) return;
+      const p = PROJECTS.find(x => x.id === activeProjectId);
+      if (!p) return;
+
+      const text = [
+        p.title,
+        p.category ? `Kategorie: ${p.category}.` : '',
+        p.status ? `Status: ${p.status}.` : '',
+        p.short ? p.short : '',
+        p.traffic ? `Verkehr: ${p.traffic}` : ''
+      ].filter(Boolean).join(' ');
+
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'de-DE';
+        window.speechSynthesis.speak(u);
+      } catch {}
+    }
+
+    function focusOnMap(id) {
+      if (APP_MODE !== 'citizen') return;
+      const p = PROJECTS.find(x => x.id === id);
+      if (!p) return;
+      const panel = document.getElementById('map-panel');
+      if (panel.classList.contains('hidden')) toggleMap();
+      ensureMap();
+      if (!(Number.isFinite(p.lat) && Number.isFinite(p.lng))) return;
+      map.setView([p.lat, p.lng], Math.max(map.getZoom(), 15));
+      const marker = markersById.get(id);
+      if (marker) marker.openPopup();
+    }
+
+    function filteredProjects() {
+      const q = (document.getElementById('search')?.value || '').trim().toLowerCase();
+      const status = document.getElementById('statusFilter')?.value || '';
+
+      return PROJECTS.filter(p => {
+        if (status && p.status !== status) return false;
+        if (!q) return true;
+        const hay = [
+          p.id, p.title, p.category, p.status, p.address, p.short, p.why, p.traffic,
+          ...(p.trades || [])
+        ].join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
+    function renderFavorites() {
+      const wrap = document.getElementById('favoritesList');
+      wrap.innerHTML = '';
+      const favs = getFavorites();
+      if (!favs.length) {
+        const empty = document.createElement('div');
+        empty.className = 'text-sm text-slate-500';
+        empty.textContent = 'Noch keine Favoriten.';
+        wrap.appendChild(empty);
+        return;
+      }
+      favs.map(id => PROJECTS.find(p => p.id === id)).filter(Boolean).forEach(p => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-left p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50';
+        btn.onclick = () => openDetail(p.id);
+        btn.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="font-semibold truncate">${escapeHtml(p.icon)} ${escapeHtml(p.title || '—')}</div>
+              <div class="text-xs text-slate-500 mt-0.5 truncate">${escapeHtml(p.status || '—')} • ${escapeHtml(p.category || '—')}</div>
+            </div>
+            <div class="shrink-0 text-xs font-semibold text-slate-600">${formatEUR(p.budgetEUR)}</div>
+          </div>
+        `;
+        wrap.appendChild(btn);
+      });
+    }
+
+    function renderList() {
+      const list = document.getElementById('projectList');
+      const results = filteredProjects();
+      const favs = new Set(getFavorites());
+
+      const sorted = [...results].sort((a, b) => {
+        const af = favs.has(a.id) ? 0 : 1;
+        const bf = favs.has(b.id) ? 0 : 1;
+        if (af !== bf) return af - bf;
+        return (a.title || '').localeCompare(b.title || '', 'de');
+      });
+
+      document.getElementById('resultCount').textContent = `${sorted.length} Projekte`;
+      list.innerHTML = '';
+
+      sorted.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-sm transition-shadow';
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="text-xs text-slate-500">${escapeHtml(p.category || '—')}</div>
+              <div class="font-bold mt-1 truncate">${escapeHtml(p.icon)} ${escapeHtml(p.title || '—')}</div>
+              <div class="text-sm text-slate-600 mt-1 line-clamp-2">${escapeHtml(p.short || '')}</div>
+            </div>
+            <button class="shrink-0 text-sm font-semibold rounded-lg px-2.5 py-1.5 border ${isFavorite(p.id) ? 'bg-wb-primary text-white border-wb-primary' : 'bg-white text-slate-700 border-slate-200 hover:bg-wb-soft'}"
+              title="Favorit (max. 3)"
+              aria-label="Favorit"
+              onclick="event.stopPropagation(); toggleFavorite('${escapeAttr(p.id)}')">
+              ${isFavorite(p.id) ? '★' : '☆'}
+            </button>
+          </div>
+          <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
+            <span class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700">${escapeHtml(p.status || '—')}</span>
+            <span class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700">${formatEUR(p.budgetEUR)}</span>
+            ${p.address ? `<span class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700 truncate max-w-[260px]">${escapeHtml(p.address)}</span>` : ''}
+          </div>
+          <div class="mt-4 flex gap-2">
+            <button class="flex-1 text-sm font-semibold bg-slate-900 text-white rounded-xl py-2.5 hover:bg-slate-800"
+              onclick="openDetail('${escapeAttr(p.id)}')">Details</button>
+            <button class="text-sm font-semibold bg-white border border-slate-200 rounded-xl px-3 hover:bg-slate-50"
+              onclick="event.stopPropagation(); focusOnMap('${escapeAttr(p.id)}')">🗺️</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function renderFilters() {
+      const sel = document.getElementById('statusFilter');
+      const cur = sel.value;
+      const statuses = Array.from(new Set(PROJECTS.map(p => p.status).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'de'));
+      sel.innerHTML = '<option value="">Alle Status</option>' + statuses.map(s => `<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`).join('');
+      sel.value = statuses.includes(cur) ? cur : '';
+    }
+
+    function renderMapMarkers() {
+      if (!map) return;
+      markersById.forEach(m => m.remove());
+      markersById = new Map();
+
+      PROJECTS.forEach(p => {
+        if (!(Number.isFinite(p.lat) && Number.isFinite(p.lng))) return;
+        const marker = L.marker([p.lat, p.lng]).addTo(map);
+        marker.bindPopup(`<div class="font-semibold">${escapeHtml(p.icon)} ${escapeHtml(p.title || '—')}</div><div class="text-xs text-slate-600">${escapeHtml(p.status || '')}</div>`);
+        marker.on('click', () => openDetail(p.id));
+        markersById.set(p.id, marker);
+      });
+    }
+
+    function render() {
+      if (APP_MODE !== 'citizen') return;
+      renderFilters();
+      renderFavorites();
+      renderList();
+      renderMapMarkers();
+    }
+
+    function formatForInput(v) {
+      if (v === null || v === undefined) return '';
+      if (Array.isArray(v)) return v.join(', ');
+      return String(v);
+    }
+
+    function parseFromInput(key, value) {
+      const cols = DATA?.table?.columns || [];
+      const col = cols.find(c => c.key === key);
+      const type = col?.type || 'string';
+      const raw = value.trim();
+
+      if (type === 'number') return raw === '' ? null : Number(raw);
+      if (type === 'string[]') return raw === '' ? [] : raw.split(',').map(s => s.trim()).filter(Boolean);
+      if (type === 'json') {
+        if (raw === '') return null;
+        try { return JSON.parse(raw); } catch { return raw; }
+      }
+      return raw;
+    }
+
+    function renderAdmin() {
+      const head = document.getElementById('adminTableHead');
+      const body = document.getElementById('adminTableBody');
+      const cols = DATA?.table?.columns || [];
+
+      head.innerHTML = cols.map(c => `
+        <th class="text-left font-semibold text-slate-700 px-3 py-3 whitespace-nowrap">${escapeHtml(c.label)}</th>
+      `).join('') + `<th class="text-left font-semibold text-slate-700 px-3 py-3 whitespace-nowrap">Aktion</th>`;
+
+      body.innerHTML = '';
+      TABLE_ROWS.forEach((row, rowIdx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'align-top';
+        tr.innerHTML = cols.map(c => {
+          const val = formatForInput(row?.[c.key]);
+          const isLong = ['short', 'why', 'traffic'].includes(c.key);
+          const common = `data-row="${rowIdx}" data-key="${escapeAttr(c.key)}" oninput="onAdminCellInput(event)"`;
+          if (isLong) {
+            return `
+              <td class="px-3 py-2 min-w-[220px]">
+                <textarea ${common} class="w-full min-h-[44px] rounded-lg border border-slate-200 px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-wb-ring">${escapeHtml(val)}</textarea>
+              </td>
+            `;
+          }
+          return `
+            <td class="px-3 py-2 min-w-[180px]">
+              <input ${common} value="${escapeAttr(val)}"
+                class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-wb-ring" />
+            </td>
+          `;
+        }).join('') + `
+          <td class="px-3 py-2 whitespace-nowrap">
+            <button class="text-sm font-semibold text-red-600 hover:text-red-700" onclick="removeAdminRow(${rowIdx})">Löschen</button>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function syncProjectsFromRows() {
+      PROJECTS = TABLE_ROWS.map(projectFromRow).filter(p => p.id);
+    }
+
+    function onAdminCellInput(e) {
+      const el = e.target;
+      const rowIdx = Number(el.getAttribute('data-row'));
+      const key = el.getAttribute('data-key');
+      if (!Number.isFinite(rowIdx) || !key) return;
+      const nextVal = parseFromInput(key, el.value ?? '');
+      TABLE_ROWS[rowIdx] = { ...(TABLE_ROWS[rowIdx] || {}), [key]: nextVal };
+      DATA.table.rows = TABLE_ROWS;
+      syncProjectsFromRows();
+    }
+
+    function addAdminRow() {
+      const stamp = Date.now().toString(36);
+      TABLE_ROWS.unshift({
+        id: `neues-projekt-${stamp}`,
+        icon: '🏗️',
+        title: 'Neues Projekt',
+        category: '',
+        status: 'In Planung',
+        address: '',
+        lat: null,
+        lng: null,
+        budgetEUR: null,
+        start: '',
+        end: '',
+        short: '',
+        why: '',
+        traffic: '',
+        trades: [],
+        image: ''
+      });
+      DATA.table.rows = TABLE_ROWS;
+      syncProjectsFromRows();
+      renderAdmin();
+    }
+
+    function removeAdminRow(rowIdx) {
+      TABLE_ROWS.splice(rowIdx, 1);
+      DATA.table.rows = TABLE_ROWS;
+      syncProjectsFromRows();
+      renderAdmin();
+    }
+
+    async function copyExportJson() {
+      try {
+        const text = JSON.stringify(DATA, null, 2);
+        await navigator.clipboard.writeText(text);
+        alert('JSON wurde in die Zwischenablage kopiert.');
+      } catch {
+        alert('Kopieren nicht möglich (Browser-Sicherheit). Du kannst im Code `console.log(DATA)` nutzen.');
+      }
+    }
+
+    function ensureMap() {
+      if (map) return map;
+      const center = DATA?.config?.defaultCenter || { lat: 51.1496, lng: 12.0989, zoom: 13 };
+      map = L.map('map').setView([center.lat, center.lng], center.zoom || 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+      renderMapMarkers();
+      return map;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+    }
+    function escapeAttr(str) { return escapeHtml(str).replace(/`/g, '&#96;'); }
+
+    async function init() {
+      const res = await fetch('./projekte.json', { cache: 'no-store' });
+      DATA = await res.json();
+
+      document.getElementById('app-name').textContent = DATA?.config?.appName || 'WeBuild';
+      document.getElementById('location-name').textContent = DATA?.config?.location ? `– ${DATA.config.location}` : '';
+
+      TABLE_ROWS = Array.isArray(DATA?.table?.rows) ? DATA.table.rows : [];
+      PROJECTS = TABLE_ROWS.map(projectFromRow).filter(p => p.id);
+
+      document.getElementById('search').addEventListener('input', render);
+      document.getElementById('statusFilter').addEventListener('change', render);
+
+      setMode('citizen');
+    }
+
+    init().catch(err => {
+      console.error(err);
+      alert('Fehler beim Laden von projekte.json. Prüfe die JSON-Syntax.');
+    });
+  </script>
+</body>
+</html>
