@@ -161,11 +161,78 @@
               <div class="text-xs text-slate-500">max. 3</div>
             </div>
             <div id="favoritesList" class="mt-3 space-y-2"></div>
+
+            <div class="mt-4 pt-4 border-t border-slate-200">
+              <div class="flex items-center justify-between">
+                <div class="font-semibold">Schnellauswahl</div>
+                <div class="text-xs text-slate-500">nach Art gruppiert</div>
+              </div>
+              <div class="mt-1 text-xs text-slate-500">● grün = weit fortgeschritten · ● gelb = in Arbeit · ● rot = früher Stand</div>
+              <div id="quickSelectList" class="mt-3 space-y-3"></div>
+            </div>
+
             <div class="mt-4 pt-4 border-t border-slate-200">
               <div class="font-semibold">Daten-Input (Tabelle)</div>
               <div class="text-sm text-slate-600 mt-1">
                 Pflege deine Projekte in <span class="font-mono">projekte.json → table.rows</span>.
                 Spalten sind in <span class="font-mono">table.columns</span> dokumentiert.
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-200">
+              <div class="font-semibold">KI-Chat (App)</div>
+              <div class="text-xs text-slate-500 mt-1">Fragen zur App, Funktionen oder Daten stellen.</div>
+              <div id="appChatMessages" class="mt-3 space-y-2 max-h-52 overflow-y-auto pr-1"></div>
+              <div class="mt-2 flex gap-2">
+                <input id="appChatInput" type="text"
+                  class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+                  placeholder="z. B. Welche Projekte sind in Planung?"
+                  onkeydown="if(event.key==='Enter'){sendAppChat();}" />
+                <button onclick="sendAppChat()"
+                  class="text-sm font-semibold bg-wb-primary text-white rounded-xl px-3 py-2 hover:bg-wb-primary2">Senden</button>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-200">
+              <div class="font-semibold">Bürger-Vorschlag einreichen</div>
+              <div class="text-xs text-slate-500 mt-1">Neue Bauvorhaben oder Verbesserungen an die Stadtverwaltung melden.</div>
+
+              <div class="mt-3 grid grid-cols-1 gap-2">
+                <input id="citizenAddress" type="text"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+                  placeholder="Genaue Adresse / Ort" />
+                <input id="citizenPurpose" type="text"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+                  placeholder="Zweck (z. B. Verkehrssicherheit, Spielplatz, Radweg)" />
+                <input id="citizenType" type="text"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+                  placeholder="Art des Vorhabens (z. B. Straße, Schule, Grünfläche)" />
+                <textarea id="citizenDescription"
+                  class="w-full min-h-[90px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+                  placeholder="Beschreibung: Was soll umgesetzt werden und warum?"></textarea>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input id="citizenContactEmail" type="email"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+                    placeholder="Kontakt E-Mail (optional)" />
+                  <input id="citizenContactPhone" type="text"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+                    placeholder="Kontakt Telefon (optional)" />
+                </div>
+                <select id="citizenPriority"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring">
+                  <option value="">Priorität (optional)</option>
+                  <option value="niedrig">Niedrig</option>
+                  <option value="mittel">Mittel</option>
+                  <option value="hoch">Hoch</option>
+                </select>
+                <button onclick="submitCitizenProposal()"
+                  class="text-sm font-semibold bg-wb-primary text-white rounded-xl px-3 py-2 hover:bg-wb-primary2">
+                  An Stadtverwaltung senden
+                </button>
+              </div>
+
+              <div id="citizenProposalFeedback" class="mt-2 text-xs text-slate-500"></div>
+              <div class="mt-3">
+                <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Zuletzt eingereicht</div>
+                <div id="citizenProposalList" class="mt-2 space-y-2"></div>
               </div>
             </div>
           </div>
@@ -268,9 +335,55 @@
                 <div class="flex justify-between gap-3"><span class="text-slate-500">Budget</span><span id="detail-budget" class="font-medium"></span></div>
                 <div class="flex justify-between gap-3"><span class="text-slate-500">Zeitraum</span><span id="detail-dates" class="font-medium"></span></div>
               </div>
+              <div class="mt-3 rounded-xl border border-slate-200 bg-white p-3">
+                <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Budget-Aufschlüsselung</div>
+                <div id="detail-budget-breakdown" class="mt-2 space-y-2"></div>
+              </div>
               <div class="mt-4 pt-4 border-t border-slate-200">
                 <div class="font-semibold">Ausführende Gewerke</div>
                 <div id="detail-trades" class="mt-2 flex flex-wrap gap-2"></div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-200">
+                <div class="font-semibold">Beteiligte Unternehmen</div>
+                <div class="text-xs text-slate-500 mt-1">Klicke auf einen Namen für Details.</div>
+                <div id="detail-companies-list" class="mt-3 space-y-2"></div>
+                <div id="detail-company-card" class="mt-3 rounded-xl border border-slate-200 bg-white p-3"></div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-200">
+                <div class="font-semibold">Projekt-Updates abonnieren</div>
+                <div class="text-xs text-slate-500 mt-1">E-Mail oder Telefonnummer eingeben und bei Änderungen informiert werden.</div>
+
+                <div class="mt-3 grid grid-cols-1 gap-2">
+                  <input id="notifyInput" type="text"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+                    placeholder="E-Mail oder Telefonnummer" />
+                  <div class="grid grid-cols-2 gap-2">
+                    <button onclick="subscribeToProject('email')"
+                      class="text-sm font-semibold bg-white border border-slate-200 rounded-xl px-3 py-2 hover:bg-wb-soft">
+                      Per E-Mail
+                    </button>
+                    <button onclick="subscribeToProject('sms')"
+                      class="text-sm font-semibold bg-white border border-slate-200 rounded-xl px-3 py-2 hover:bg-wb-soft">
+                      Per SMS
+                    </button>
+                  </div>
+                </div>
+
+                <div id="notifyFeedback" class="mt-2 text-xs text-slate-500"></div>
+                <div id="notifyList" class="mt-3 space-y-2"></div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-200">
+                <div class="font-semibold">KI-Chat (Projekt)</div>
+                <div class="text-xs text-slate-500 mt-1">Fragen speziell zu diesem Projekt stellen.</div>
+                <div id="projectChatMessages" class="mt-3 space-y-2 max-h-52 overflow-y-auto pr-1"></div>
+                <div class="mt-2 flex gap-2">
+                  <input id="projectChatInput" type="text"
+                    class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+                    placeholder="z. B. Wann ist die Fertigstellung?"
+                    onkeydown="if(event.key==='Enter'){sendProjectChat();}" />
+                  <button onclick="sendProjectChat()"
+                    class="text-sm font-semibold bg-wb-primary text-white rounded-xl px-3 py-2 hover:bg-wb-primary2">Senden</button>
+                </div>
               </div>
               <div class="mt-4 pt-4 border-t border-slate-200">
                 <button onclick="focusOnMap(activeProjectId)"
@@ -292,10 +405,14 @@
     let PROJECTS = [];
     let activeProjectId = null;
     let activeMilestoneKeyByProject = new Map(); // projectId -> milestoneKey
+    let activeCompanyByProject = new Map(); // projectId -> companyId
     let map = null;
     let markersById = new Map();
 
     const FAVORITES_KEY = 'webuild:favorites:v1';
+    const SUBSCRIPTIONS_KEY = 'webuild:subscriptions:v1';
+    const CHAT_KEY = 'webuild:chat:v1';
+    const PROPOSALS_KEY = 'webuild:citizen-proposals:v1';
 
     function getFavorites() {
       try {
@@ -313,6 +430,51 @@
 
     function isFavorite(id) {
       return getFavorites().includes(id);
+    }
+
+    function getSubscriptions() {
+      try {
+        const raw = localStorage.getItem(SUBSCRIPTIONS_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function setSubscriptions(subs) {
+      localStorage.setItem(SUBSCRIPTIONS_KEY, JSON.stringify(subs));
+    }
+
+    function getChatState() {
+      try {
+        const raw = localStorage.getItem(CHAT_KEY);
+        const obj = raw ? JSON.parse(raw) : {};
+        return {
+          app: Array.isArray(obj.app) ? obj.app : [],
+          project: (obj.project && typeof obj.project === 'object') ? obj.project : {}
+        };
+      } catch {
+        return { app: [], project: {} };
+      }
+    }
+
+    function setChatState(next) {
+      localStorage.setItem(CHAT_KEY, JSON.stringify(next));
+    }
+
+    function getCitizenProposals() {
+      try {
+        const raw = localStorage.getItem(PROPOSALS_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function setCitizenProposals(items) {
+      localStorage.setItem(PROPOSALS_KEY, JSON.stringify(items));
     }
 
     function toggleFavorite(id) {
@@ -345,18 +507,35 @@
         id: safeText(row.id).trim(),
         icon: safeText(row.icon || '🏗️'),
         title: safeText(row.title),
+        projectType: safeText(row.projectType),
         category: safeText(row.category),
+        progress: safeText(row.progress).toLowerCase(),
         status: safeText(row.status),
         address: safeText(row.address),
         lat: (row.lat === null || row.lat === undefined || row.lat === '') ? null : Number(row.lat),
         lng: (row.lng === null || row.lng === undefined || row.lng === '') ? null : Number(row.lng),
         budgetEUR: (row.budgetEUR === null || row.budgetEUR === undefined || row.budgetEUR === '') ? null : Number(row.budgetEUR),
+        budgetBreakdown: Array.isArray(row.budgetBreakdown) ? row.budgetBreakdown.map(b => ({
+          label: safeText(b?.label || ''),
+          amount: (b?.amount === null || b?.amount === undefined || b?.amount === '') ? null : Number(b.amount),
+          note: safeText(b?.note || '')
+        })).filter(b => b.label || b.amount !== null) : [],
         start: safeText(row.start),
         end: safeText(row.end),
         short: safeText(row.short),
         why: safeText(row.why),
         traffic: safeText(row.traffic),
         trades: Array.isArray(row.trades) ? row.trades.map(safeText) : [],
+        companies: Array.isArray(row.companies) ? row.companies.map(c => ({
+          id: safeText(c?.id || ''),
+          name: safeText(c?.name || ''),
+          ceo: safeText(c?.ceo || ''),
+          address: safeText(c?.address || ''),
+          local: Boolean(c?.local),
+          services: Array.isArray(c?.services) ? c.services.map(safeText) : [],
+          about: safeText(c?.about || ''),
+          contact: safeText(c?.contact || '')
+        })).filter(c => c.id || c.name) : [],
         image: safeText(row.image),
         beforeImage: safeText(row.beforeImage),
         afterImage: safeText(row.afterImage),
@@ -438,6 +617,9 @@
       renderMilestones(p);
       renderMilestoneMedia(p);
       renderBeforeAfter(p);
+      renderCompanies(p);
+      renderSubscriptions(p);
+      renderProjectChat(p.id);
 
       document.getElementById('detail-short').textContent = p.short || '—';
       document.getElementById('detail-why').textContent = p.why || '—';
@@ -446,6 +628,7 @@
       document.getElementById('detail-status').textContent = p.status || '—';
       document.getElementById('detail-category').textContent = p.category || '—';
       document.getElementById('detail-budget').textContent = formatEUR(p.budgetEUR);
+      renderBudgetBreakdown(p);
       const dates = [p.start, p.end].filter(Boolean).join(' → ');
       document.getElementById('detail-dates').textContent = dates || '—';
 
@@ -525,6 +708,451 @@
       if (handle) handle.style.left = `${v}%`;
       if (pct) pct.textContent = String(v);
       if (opts?.setRange && range) range.value = String(v);
+    }
+
+    function getActiveCompany(p) {
+      if (!p?.companies?.length) return null;
+      const key = activeCompanyByProject.get(p.id);
+      if (!key) return p.companies[0] || null;
+      return p.companies.find(c => c.id === key) || p.companies[0] || null;
+    }
+
+    function selectCompany(projectId, companyId) {
+      activeCompanyByProject.set(projectId, companyId);
+      const p = PROJECTS.find(x => x.id === projectId);
+      if (!p) return;
+      renderCompanies(p);
+    }
+
+    function renderCompanies(p) {
+      const list = document.getElementById('detail-companies-list');
+      const card = document.getElementById('detail-company-card');
+      if (!list || !card) return;
+
+      list.innerHTML = '';
+      const companies = p.companies || [];
+      if (!companies.length) {
+        card.innerHTML = '<div class="text-sm text-slate-500">Keine Unternehmensdaten hinterlegt.</div>';
+        return;
+      }
+
+      const firstId = companies[0]?.id || '';
+      const activeId = activeCompanyByProject.get(p.id) || firstId;
+      activeCompanyByProject.set(p.id, activeId);
+
+      companies.forEach((c, idx) => {
+        const cid = c.id || `${p.id}:c${idx}`;
+        if (!c.id) c.id = cid;
+        const isActive = cid === activeCompanyByProject.get(p.id);
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left px-3 py-2 rounded-xl border ${
+          isActive ? 'border-wb-primary2 bg-wb-soft' : 'border-slate-200 bg-white hover:bg-slate-50'
+        }`;
+        btn.onclick = () => selectCompany(p.id, cid);
+        btn.innerHTML = `
+          <div class="font-semibold text-sm truncate">${escapeHtml(c.name || 'Unternehmen')}</div>
+          <div class="text-xs text-slate-500">${c.local ? 'Ortsansässig' : 'Nicht ortsansässig'}</div>
+        `;
+        list.appendChild(btn);
+      });
+
+      const active = getActiveCompany(p);
+      if (!active) return;
+      const services = (active.services?.length ? active.services : ['—'])
+        .map(s => `<span class="text-xs font-semibold px-2 py-1 rounded-full bg-white border border-slate-200 text-slate-700">${escapeHtml(s)}</span>`)
+        .join('');
+
+      card.innerHTML = `
+        <div class="space-y-2 text-sm">
+          <div><span class="text-slate-500">Unternehmen:</span> <span class="font-semibold">${escapeHtml(active.name || '—')}</span></div>
+          <div><span class="text-slate-500">Geschäftsführer:</span> <span class="font-medium">${escapeHtml(active.ceo || '—')}</span></div>
+          <div><span class="text-slate-500">Adresse:</span> <span class="font-medium">${escapeHtml(active.address || '—')}</span></div>
+          <div><span class="text-slate-500">Ortsansässig:</span> <span class="font-medium">${active.local ? 'Ja' : 'Nein'}</span></div>
+          <div><span class="text-slate-500">Kontakt:</span> <span class="font-medium">${escapeHtml(active.contact || '—')}</span></div>
+          <div><span class="text-slate-500">Kurzprofil:</span> <span class="font-medium">${escapeHtml(active.about || '—')}</span></div>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2">${services}</div>
+      `;
+    }
+
+    function maskContact(value, channel) {
+      const v = String(value || '');
+      if (!v) return '—';
+      if (channel === 'email') {
+        const [left, right = ''] = v.split('@');
+        if (!right) return v;
+        const keep = left.slice(0, 2);
+        return `${keep}${'*'.repeat(Math.max(1, left.length - keep.length))}@${right}`;
+      }
+      const last = v.replace(/\s+/g, '').slice(-4);
+      return `***${last}`;
+    }
+
+    function isValidEmail(v) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+    }
+
+    function isValidPhone(v) {
+      const cleaned = v.replace(/[^\d+]/g, '');
+      return /^\+?\d{7,15}$/.test(cleaned);
+    }
+
+    function setNotifyFeedback(text, isError = false) {
+      const el = document.getElementById('notifyFeedback');
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = `mt-2 text-xs ${isError ? 'text-red-600' : 'text-emerald-700'}`;
+    }
+
+    function subscribeToProject(channel) {
+      if (!activeProjectId) return;
+      const input = document.getElementById('notifyInput');
+      if (!input) return;
+      const raw = (input.value || '').trim();
+      if (!raw) {
+        setNotifyFeedback('Bitte E-Mail oder Telefonnummer eingeben.', true);
+        return;
+      }
+
+      if (channel === 'email' && !isValidEmail(raw)) {
+        setNotifyFeedback('Bitte eine gültige E-Mail-Adresse eingeben.', true);
+        return;
+      }
+      if (channel === 'sms' && !isValidPhone(raw)) {
+        setNotifyFeedback('Bitte eine gültige Telefonnummer eingeben (z. B. +491701234567).', true);
+        return;
+      }
+
+      const subs = getSubscriptions();
+      const duplicate = subs.find(s => s.projectId === activeProjectId && s.channel === channel && s.value.toLowerCase() === raw.toLowerCase());
+      if (duplicate) {
+        setNotifyFeedback('Dieses Update-Abo existiert bereits.', true);
+        renderSubscriptions(PROJECTS.find(p => p.id === activeProjectId));
+        return;
+      }
+
+      subs.unshift({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        projectId: activeProjectId,
+        channel,
+        value: raw,
+        createdAt: new Date().toISOString()
+      });
+      setSubscriptions(subs);
+      input.value = '';
+      setNotifyFeedback('Abo gespeichert. Sofort-Info: Der aktuelle Projektstatus wurde zugestellt.');
+      renderSubscriptions(PROJECTS.find(p => p.id === activeProjectId));
+    }
+
+    function removeSubscription(subId) {
+      const next = getSubscriptions().filter(s => s.id !== subId);
+      setSubscriptions(next);
+      setNotifyFeedback('Abo entfernt.');
+      renderSubscriptions(PROJECTS.find(p => p.id === activeProjectId));
+    }
+
+    function renderSubscriptions(p) {
+      const list = document.getElementById('notifyList');
+      if (!list || !p) return;
+      list.innerHTML = '';
+
+      const subs = getSubscriptions().filter(s => s.projectId === p.id);
+      if (!subs.length) {
+        list.innerHTML = '<div class="text-xs text-slate-500">Noch keine aktiven Update-Abos für dieses Projekt.</div>';
+        return;
+      }
+
+      subs.forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2';
+        row.innerHTML = `
+          <div class="min-w-0">
+            <div class="text-xs font-semibold text-slate-700">${s.channel === 'email' ? 'E-Mail' : 'SMS'}</div>
+            <div class="text-xs text-slate-500 truncate">${escapeHtml(maskContact(s.value, s.channel))}</div>
+          </div>
+          <button class="text-xs font-semibold text-red-600 hover:text-red-700" onclick="removeSubscription('${escapeAttr(s.id)}')">Entfernen</button>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function renderBudgetBreakdown(p) {
+      const wrap = document.getElementById('detail-budget-breakdown');
+      if (!wrap) return;
+      const items = Array.isArray(p?.budgetBreakdown) ? p.budgetBreakdown : [];
+      if (!items.length) {
+        wrap.innerHTML = '<div class="text-xs text-slate-500">Keine Aufschlüsselung hinterlegt.</div>';
+        return;
+      }
+
+      const palette = ['#1E4E79', '#2E6AA3', '#0EA5E9', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6'];
+      const total = items.reduce((sum, it) => sum + (Number.isFinite(it.amount) ? it.amount : 0), 0);
+      const segments = items.map((it, idx) => {
+        const val = Number.isFinite(it.amount) ? it.amount : 0;
+        const pct = total > 0 ? (val / total) * 100 : 0;
+        return `<div style="width:${pct}%; background:${palette[idx % palette.length]};" class="h-full"></div>`;
+      }).join('');
+
+      const legend = items.map((it, idx) => {
+        const val = Number.isFinite(it.amount) ? it.amount : 0;
+        const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+        return `
+          <div class="flex items-center justify-between gap-2 text-[11px]">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="inline-block w-2.5 h-2.5 rounded-full shrink-0" style="background:${palette[idx % palette.length]};"></span>
+              <span class="truncate text-slate-600">${escapeHtml(it.label || 'Posten')}</span>
+            </div>
+            <span class="text-slate-500 shrink-0">${pct}%</span>
+          </div>
+        `;
+      }).join('');
+
+      const rows = items.map((it, idx) => {
+        const val = Number.isFinite(it.amount) ? it.amount : 0;
+        const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+        return `
+          <div class="rounded-lg border border-slate-200 p-2">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="text-xs font-semibold text-slate-700">${escapeHtml(it.label || 'Posten')}</div>
+                ${it.note ? `<div class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(it.note)}</div>` : ''}
+              </div>
+              <div class="text-xs font-semibold text-slate-700 whitespace-nowrap">${formatEUR(val)} <span class="text-slate-400">(${pct}%)</span></div>
+            </div>
+            <div class="mt-2 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+              <div class="h-full rounded-full" style="width:${pct}%; background:${palette[idx % palette.length]};"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      wrap.innerHTML = `
+        <div class="rounded-lg border border-slate-200 p-2">
+          <div class="text-[11px] font-semibold text-slate-600">Grafische Verteilung</div>
+          <div class="mt-2 h-2.5 rounded-full bg-slate-100 overflow-hidden flex">${segments}</div>
+          <div class="mt-2 space-y-1">${legend}</div>
+        </div>
+      ` + rows + `
+        <div class="flex justify-between text-xs pt-1">
+          <span class="text-slate-500">Summe aufgeschlüsselt</span>
+          <span class="font-semibold text-slate-700">${formatEUR(total)}</span>
+        </div>
+      `;
+    }
+
+    function pushChatMessage(scope, projectId, role, text) {
+      const state = getChatState();
+      const entry = { role, text: String(text || ''), ts: Date.now() };
+      if (scope === 'app') {
+        state.app.push(entry);
+        state.app = state.app.slice(-30);
+      } else {
+        const key = projectId || 'unknown';
+        if (!Array.isArray(state.project[key])) state.project[key] = [];
+        state.project[key].push(entry);
+        state.project[key] = state.project[key].slice(-30);
+      }
+      setChatState(state);
+    }
+
+    function chatBubbleHtml(m) {
+      const isUser = m.role === 'user';
+      return `
+        <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
+          <div class="${isUser ? 'bg-wb-primary text-white' : 'bg-white text-slate-700 border border-slate-200'} max-w-[92%] text-xs rounded-xl px-3 py-2">
+            ${escapeHtml(m.text || '')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAppChat() {
+      const wrap = document.getElementById('appChatMessages');
+      if (!wrap) return;
+      const state = getChatState();
+      const msgs = state.app;
+      if (!msgs.length) {
+        wrap.innerHTML = `<div class="text-xs text-slate-500">Hallo! Ich beantworte Fragen zur App und zu den Projektdaten.</div>`;
+        return;
+      }
+      wrap.innerHTML = msgs.map(chatBubbleHtml).join('');
+      wrap.scrollTop = wrap.scrollHeight;
+    }
+
+    function renderProjectChat(projectId) {
+      const wrap = document.getElementById('projectChatMessages');
+      if (!wrap) return;
+      const state = getChatState();
+      const msgs = (state.project && Array.isArray(state.project[projectId])) ? state.project[projectId] : [];
+      if (!msgs.length) {
+        wrap.innerHTML = `<div class="text-xs text-slate-500">Frage mich alles zu diesem Projekt: Status, Firmen, Zeitplan, Fortschritt usw.</div>`;
+        return;
+      }
+      wrap.innerHTML = msgs.map(chatBubbleHtml).join('');
+      wrap.scrollTop = wrap.scrollHeight;
+    }
+
+    function generateAppReply(q) {
+      const query = String(q || '').toLowerCase();
+      const total = PROJECTS.length;
+      const inPlan = PROJECTS.filter(p => (p.status || '').toLowerCase().includes('planung') || (p.status || '').toLowerCase().includes('konzept')).length;
+      const types = Array.from(new Set(PROJECTS.map(p => p.projectType).filter(Boolean))).join(', ') || '—';
+
+      if (query.includes('wie viele') || query.includes('anzahl')) {
+        return `Aktuell sind ${total} Projekte in der App erfasst.`;
+      }
+      if (query.includes('kategorie') || query.includes('art')) {
+        return `Verfügbare Arten/Kategorien sind z. B.: ${types}.`;
+      }
+      if (query.includes('planung') || query.includes('konzept')) {
+        return `${inPlan} Projekte befinden sich aktuell in Planung/Konzeptphase.`;
+      }
+      if (query.includes('suche') || query.includes('filter')) {
+        return 'Du kannst oben über die Suche nach Titel, Adresse, Kategorie, Status und weiteren Schlagwörtern filtern.';
+      }
+      return 'Ich kann dir zur App helfen: Anzahl Projekte, Kategorien/Arten, Status, Suche, Karte, Favoriten, Zeitstrahl oder Vorher/Nachher.';
+    }
+
+    function generateProjectReply(p, q) {
+      const query = String(q || '').toLowerCase();
+      if (!p) return 'Projekt nicht gefunden.';
+      if (query.includes('status')) return `Status von "${p.title}": ${p.status || '—'}.`;
+      if (query.includes('fertig') || query.includes('ende') || query.includes('zeit')) {
+        return `Geplanter Zeitraum: ${[p.start, p.end].filter(Boolean).join(' → ') || '—'}.`;
+      }
+      if (query.includes('budget') || query.includes('kosten')) {
+        return `Budget: ${formatEUR(p.budgetEUR)}.`;
+      }
+      if (query.includes('firma') || query.includes('unternehmen')) {
+        const names = (p.companies || []).map(c => c.name).filter(Boolean);
+        return names.length
+          ? `Beteiligte Unternehmen: ${names.join(', ')}.`
+          : 'Für dieses Projekt sind noch keine Unternehmen hinterlegt.';
+      }
+      if (query.includes('verkehr') || query.includes('sperr')) {
+        return p.traffic || 'Für dieses Projekt sind derzeit keine Verkehrsinformationen hinterlegt.';
+      }
+      if (query.includes('fortschritt') || query.includes('ampel')) {
+        return `Ampel-Fortschritt: ${p.progress || 'rot'} (Art: ${p.projectType || '—'}).`;
+      }
+      return `Zum Projekt "${p.title}" kann ich dir Infos zu Status, Zeitplan, Budget, Unternehmen, Verkehr, Fortschritt und Meilensteinen geben.`;
+    }
+
+    function sendAppChat() {
+      const input = document.getElementById('appChatInput');
+      if (!input) return;
+      const q = (input.value || '').trim();
+      if (!q) return;
+      pushChatMessage('app', null, 'user', q);
+      pushChatMessage('app', null, 'ai', generateAppReply(q));
+      input.value = '';
+      renderAppChat();
+    }
+
+    function sendProjectChat() {
+      if (!activeProjectId) return;
+      const input = document.getElementById('projectChatInput');
+      if (!input) return;
+      const q = (input.value || '').trim();
+      if (!q) return;
+      const p = PROJECTS.find(x => x.id === activeProjectId);
+      pushChatMessage('project', activeProjectId, 'user', q);
+      pushChatMessage('project', activeProjectId, 'ai', generateProjectReply(p, q));
+      input.value = '';
+      renderProjectChat(activeProjectId);
+    }
+
+    function setCitizenProposalFeedback(text, isError = false) {
+      const el = document.getElementById('citizenProposalFeedback');
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = `mt-2 text-xs ${isError ? 'text-red-600' : 'text-emerald-700'}`;
+    }
+
+    function isValidOptionalEmail(v) {
+      if (!v) return true;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+    }
+
+    function renderCitizenProposals() {
+      const wrap = document.getElementById('citizenProposalList');
+      if (!wrap) return;
+      const items = getCitizenProposals().slice(0, 3);
+      if (!items.length) {
+        wrap.innerHTML = '<div class="text-xs text-slate-500">Noch keine Vorschläge gespeichert.</div>';
+        return;
+      }
+      wrap.innerHTML = items.map(item => `
+        <div class="rounded-xl border border-slate-200 bg-white px-3 py-2">
+          <div class="text-xs font-semibold text-slate-700 truncate">${escapeHtml(item.purpose || 'Vorschlag')}</div>
+          <div class="text-xs text-slate-500 truncate">${escapeHtml(item.address || '—')}</div>
+          <div class="text-[11px] text-slate-400 mt-1">${new Date(item.createdAt).toLocaleString('de-DE')}</div>
+        </div>
+      `).join('');
+    }
+
+    function submitCitizenProposal() {
+      const address = (document.getElementById('citizenAddress')?.value || '').trim();
+      const purpose = (document.getElementById('citizenPurpose')?.value || '').trim();
+      const type = (document.getElementById('citizenType')?.value || '').trim();
+      const description = (document.getElementById('citizenDescription')?.value || '').trim();
+      const email = (document.getElementById('citizenContactEmail')?.value || '').trim();
+      const phone = (document.getElementById('citizenContactPhone')?.value || '').trim();
+      const priority = (document.getElementById('citizenPriority')?.value || '').trim();
+
+      if (!address || !purpose || !description) {
+        setCitizenProposalFeedback('Bitte mindestens Adresse, Zweck und Beschreibung ausfüllen.', true);
+        return;
+      }
+      if (!email && !phone) {
+        setCitizenProposalFeedback('Bitte mindestens eine Kontaktmöglichkeit angeben (E-Mail oder Telefon).', true);
+        return;
+      }
+      if (!isValidOptionalEmail(email)) {
+        setCitizenProposalFeedback('Bitte eine gültige E-Mail-Adresse eingeben.', true);
+        return;
+      }
+
+      const proposal = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        address, purpose, type, description, email, phone, priority,
+        createdAt: new Date().toISOString()
+      };
+
+      const all = getCitizenProposals();
+      all.unshift(proposal);
+      setCitizenProposals(all.slice(0, 30));
+      renderCitizenProposals();
+
+      const subject = encodeURIComponent(`Bürgervorschlag Bauvorhaben: ${purpose}`);
+      const body = encodeURIComponent([
+        'Neuer Bürgervorschlag',
+        '',
+        `Adresse: ${address}`,
+        `Zweck: ${purpose}`,
+        `Art: ${type || '—'}`,
+        `Priorität: ${priority || '—'}`,
+        '',
+        'Beschreibung:',
+        description,
+        '',
+        `Kontakt E-Mail: ${email || '—'}`,
+        `Kontakt Telefon: ${phone || '—'}`,
+        '',
+        `Erfasst am: ${new Date(proposal.createdAt).toLocaleString('de-DE')}`
+      ].join('\n'));
+
+      // Öffnet den Mail-Client des Nutzers, damit der Vorschlag direkt an die Stadtverwaltung gesendet wird.
+      window.location.href = `mailto:stadtverwaltung@hohenmoelsen.de?subject=${subject}&body=${body}`;
+
+      ['citizenAddress','citizenPurpose','citizenType','citizenDescription','citizenContactEmail','citizenContactPhone'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const pSel = document.getElementById('citizenPriority');
+      if (pSel) pSel.value = '';
+
+      setCitizenProposalFeedback('Vorschlag erfasst. Dein Mailprogramm wurde zum Versand geöffnet.');
     }
 
     function selectMilestone(projectId, milestoneKey) {
@@ -630,10 +1258,63 @@
         if (status && p.status !== status) return false;
         if (!q) return true;
         const hay = [
-          p.id, p.title, p.category, p.status, p.address, p.short, p.why, p.traffic,
+          p.id, p.title, p.projectType, p.category, p.progress, p.status, p.address, p.short, p.why, p.traffic,
           ...(p.trades || [])
         ].join(' ').toLowerCase();
         return hay.includes(q);
+      });
+    }
+
+    function progressMeta(progress) {
+      const p = (progress || '').toLowerCase().trim();
+      if (p === 'gruen' || p === 'grün' || p === 'green') {
+        return { dot: 'bg-emerald-500', label: 'Grün' };
+      }
+      if (p === 'gelb' || p === 'yellow') {
+        return { dot: 'bg-amber-400', label: 'Gelb' };
+      }
+      return { dot: 'bg-red-500', label: 'Rot' };
+    }
+
+    function renderQuickSelect() {
+      const wrap = document.getElementById('quickSelectList');
+      wrap.innerHTML = '';
+
+      const groups = new Map();
+      PROJECTS.forEach(p => {
+        const key = p.projectType || 'Sonstiges';
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(p);
+      });
+
+      Array.from(groups.keys()).sort((a, b) => a.localeCompare(b, 'de')).forEach(groupName => {
+        const section = document.createElement('div');
+        const entries = groups.get(groupName).sort((a, b) => (a.title || '').localeCompare(b.title || '', 'de'));
+
+        const items = entries.map(p => {
+          const pm = progressMeta(p.progress);
+          return `
+            <button class="w-full text-left px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-wb-soft"
+              onclick="openDetail('${escapeAttr(p.id)}')">
+              <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="font-semibold text-sm truncate">${escapeHtml(p.icon)} ${escapeHtml(p.title || '—')}</div>
+                  <div class="text-xs text-slate-500 truncate">${escapeHtml(p.category || '—')}</div>
+                </div>
+                <div class="shrink-0 flex items-center gap-1">
+                  <span class="inline-block w-2.5 h-2.5 rounded-full ${pm.dot}"></span>
+                  <span class="text-[11px] text-slate-500">${pm.label}</span>
+                </div>
+              </div>
+            </button>
+          `;
+        }).join('');
+
+        section.innerHTML = `
+          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">${escapeHtml(groupName)}</div>
+          <div class="space-y-2">${items}</div>
+        `;
+        wrap.appendChild(section);
       });
     }
 
@@ -739,6 +1420,9 @@
       if (APP_MODE !== 'citizen') return;
       renderFilters();
       renderFavorites();
+      renderQuickSelect();
+      renderAppChat();
+      renderCitizenProposals();
       renderList();
       renderMapMarkers();
     }

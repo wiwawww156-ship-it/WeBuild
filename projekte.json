@@ -9,18 +9,22 @@
       { "key": "id", "label": "ID", "type": "string" },
       { "key": "icon", "label": "Icon", "type": "string" },
       { "key": "title", "label": "Titel", "type": "string" },
+      { "key": "projectType", "label": "Art", "type": "string" },
       { "key": "category", "label": "Kategorie", "type": "string" },
+      { "key": "progress", "label": "Baufortschritt Ampel", "type": "string" },
       { "key": "status", "label": "Status", "type": "string" },
       { "key": "address", "label": "Adresse", "type": "string" },
       { "key": "lat", "label": "Lat", "type": "number" },
       { "key": "lng", "label": "Lng", "type": "number" },
       { "key": "budgetEUR", "label": "Budget (EUR)", "type": "number" },
+      { "key": "budgetBreakdown", "label": "Budget-Aufschlüsselung", "type": "json" },
       { "key": "start", "label": "Start", "type": "string" },
       { "key": "end", "label": "Fertigstellung", "type": "string" },
       { "key": "short", "label": "Kurzbeschreibung", "type": "string" },
       { "key": "why", "label": "Warum?", "type": "string" },
       { "key": "traffic", "label": "Verkehr", "type": "string" },
       { "key": "trades", "label": "Gewerke", "type": "string[]" },
+      { "key": "companies", "label": "Beteiligte Unternehmen", "type": "json" },
       { "key": "image", "label": "Bild (URL)", "type": "string" },
       { "key": "beforeImage", "label": "Vorher-Bild (URL)", "type": "string" },
       { "key": "afterImage", "label": "Nachher-Bild (URL)", "type": "string" },
@@ -31,18 +35,60 @@
         "id": "marktplatz-sanierung",
         "icon": "🏛️",
         "title": "Aufwertung und barrierefreier Umbau Marktplatz",
+        "projectType": "Straße",
         "category": "Städtebau & Zentrum",
+        "progress": "gelb",
         "status": "In Planung",
         "address": "Marktplatz, 06679 Hohenmölsen",
         "lat": 51.1499,
         "lng": 12.0984,
         "budgetEUR": 1200000,
+        "budgetBreakdown": [
+          { "label": "Planung, Gutachten und Genehmigungen", "amount": 120000, "note": "Entwurfs-, Ausführungs- und Verkehrsplanung inkl. Abstimmungen." },
+          { "label": "Tiefbau und Leitungsanpassungen", "amount": 360000, "note": "Unterbau, Entwässerung, Leitungsquerungen und Tragschichten." },
+          { "label": "Oberflächen/Pflaster", "amount": 290000, "note": "Barrierefreie Beläge, taktile Leitelemente, Platzflächen." },
+          { "label": "Stadtgrün und Möblierung", "amount": 180000, "note": "Bepflanzung, Sitzgelegenheiten, Aufenthaltszonen." },
+          { "label": "Beleuchtung und Elektrotechnik", "amount": 130000, "note": "LED-Technik, Anschlüsse, Steuerung." },
+          { "label": "Reserve/Risikopuffer", "amount": 120000, "note": "Preissteigerungen und unvorhergesehene Baugrundthemen." }
+        ],
         "start": "2026",
         "end": "2027",
-        "short": "Stärkung der Altstadt als multifunktionales Zentrum für alle Generationen.",
-        "why": "Belebung der Innenstadt, mehr Aufenthaltsqualität, Barrierefreiheit und Stärkung von Handel/Gastronomie.",
+        "short": "Der Marktplatz wird vollständig barrierefrei, klimaangepasst und funktional neu geordnet. Neben neuen Oberflächen entstehen bessere Wegebeziehungen, Aufenthaltsflächen und eine moderne Beleuchtung, sodass der Platz wieder als zentraler Treffpunkt für Alltag, Wochenmarkt und Veranstaltungen genutzt werden kann.",
+        "why": "Die Maßnahme ist notwendig, weil der bestehende Platz baulich verschlissen ist, Barrieren aufweist und seine Zentrumsfunktion teilweise verloren hat. Die Dauer ergibt sich aus mehreren Bauabschnitten bei laufender Erreichbarkeit, Leitungsarbeiten im Untergrund sowie der schrittweisen Vergabe und Fördermittelabrechnung; dadurch wird zugleich das Risiko für Handel und Anlieger reduziert.",
         "traffic": "Während der Bauphase zeitweise Sperrung am Marktplatz; Umleitungen/Ausweichparkplätze werden ausgeschildert.",
         "trades": ["Tiefbau", "Pflaster/Wegebau", "Grünflächen", "Beleuchtung"],
+        "companies": [
+          {
+            "id": "elsterbau-tiefbau",
+            "name": "ElsterBau Tief- und Straßenbau GmbH",
+            "ceo": "Frank Dietrich",
+            "address": "Industriestraße 12, 06679 Hohenmölsen",
+            "local": true,
+            "services": ["Tiefbau", "Leitungsbau", "Baulogistik"],
+            "about": "Mittelständischer Fachbetrieb für kommunale Tiefbauprojekte im Burgenlandkreis.",
+            "contact": "info@elsterbau.de | 034441 21090"
+          },
+          {
+            "id": "altstadt-gruen",
+            "name": "Altstadt Grünanlagen und Stadtservice KG",
+            "ceo": "Sabine Krämer",
+            "address": "Marktpassage 3, 06679 Hohenmölsen",
+            "local": true,
+            "services": ["Pflanzplanung", "Stadtgrün", "Pflegekonzepte"],
+            "about": "Planung und Umsetzung klimaresilienter Stadtgrünflächen mit Fokus auf Aufenthaltsqualität.",
+            "contact": "service@altstadtgruen.de | 034441 39820"
+          },
+          {
+            "id": "lichtwerk-sachsen",
+            "name": "LichtWerk Sachsen Infrastruktur GmbH",
+            "ceo": "Thomas Berger",
+            "address": "Technologiepark 8, 04159 Leipzig",
+            "local": false,
+            "services": ["LED-Beleuchtung", "Smart-Light Steuerung", "Wartung"],
+            "about": "Spezialanbieter für öffentliche Beleuchtungssysteme und energieeffiziente Umrüstung.",
+            "contact": "kommunal@lichtwerk-sachsen.de | 0341 667520"
+          }
+        ],
         "image": "./assets/marktplatz.png",
         "beforeImage": "./assets/marktplatz.png",
         "afterImage": "./assets/marktplatz.png",
@@ -81,18 +127,60 @@
         "id": "erholung-mondsee",
         "icon": "🏖️",
         "title": "Attraktivierung Erholungspark Mondsee",
+        "projectType": "Freizeit",
         "category": "Naherholung & Tourismus",
+        "progress": "rot",
         "status": "Konzeptphase",
         "address": "Erholungspark Mondsee, 06679 Hohenmölsen",
         "lat": 51.1614,
         "lng": 12.1227,
-        "budgetEUR": null,
+        "budgetEUR": 1650000,
+        "budgetBreakdown": [
+          { "label": "Konzept, Umwelt- und Sicherheitsgutachten", "amount": 170000, "note": "Nutzungskonzept, Wasser-/Naturschutz, Besucherlenkung." },
+          { "label": "Sanitär- und Servicegebäude", "amount": 340000, "note": "Neubau/Modernisierung inkl. barrierefreier Ausstattung." },
+          { "label": "Wege, Uferzugänge und Erschließung", "amount": 420000, "note": "Zuwegungen, befestigte Flächen und sichere Übergänge." },
+          { "label": "Freizeit- und Sportinfrastruktur", "amount": 390000, "note": "Aufwertung von Aktiv- und Aufenthaltsbereichen." },
+          { "label": "Technik, Betrieb und digitale Information", "amount": 165000, "note": "Energie, Versorgung, Leitsysteme." },
+          { "label": "Reserve/Risikopuffer", "amount": 165000, "note": "Witterung, Lieferzeiten, Preisentwicklung." }
+        ],
         "start": "2027",
         "end": "2028",
-        "short": "Ausbau der touristischen Infrastruktur am Tagebau-Folgesee.",
-        "why": "Tourismus stärken, Attraktivität erhöhen und neue wirtschaftliche Impulse schaffen.",
+        "short": "Am Mondsee wird die touristische Basisinfrastruktur umfassend modernisiert: Sanitär, Wegeführung, Aufenthaltsbereiche und Servicepunkte werden auf einen zeitgemäßen und barrierearmen Standard gebracht. Ziel ist ein ganzjährig nutzbares Naherholungsangebot mit höherer Aufenthaltsqualität und klarer Besucherführung.",
+        "why": "Notwendig ist das Projekt, weil die bestehende Infrastruktur stark saisonal ausgelastet und in Teilen technisch überholt ist. Die Laufzeit ist länger, da wassernahe Bauabschnitte, Genehmigungen aus Umwelt- und Sicherheitsrecht sowie die Ausführung außerhalb sensibler Nutzungszeiten koordiniert werden müssen.",
         "traffic": "Keine wesentlichen Einschränkungen im Stadtverkehr; Zufahrt zum See bleibt geöffnet.",
         "trades": ["Konzept/Planung", "Sanitär", "Wegebau"],
+        "companies": [
+          {
+            "id": "mondsee-projekt",
+            "name": "Mondsee Projektentwicklung mbH",
+            "ceo": "Nadine Schuster",
+            "address": "Am Seecamp 1, 06679 Hohenmölsen",
+            "local": true,
+            "services": ["Projektsteuerung", "Ausschreibungsmanagement", "Terminplanung"],
+            "about": "Projektsteuerung für touristische Infrastruktur und Freizeitareale rund um den Mondsee.",
+            "contact": "office@mondsee-projekt.de | 034441 55110"
+          },
+          {
+            "id": "wasserfreizeit-mitteldeutschland",
+            "name": "WasserFreizeit Mitteldeutschland AG",
+            "ceo": "Jens Krüger",
+            "address": "Hafenstraße 22, 06108 Halle (Saale)",
+            "local": false,
+            "services": ["Freizeitanlagen", "Steganlagen", "Badeinfrastruktur"],
+            "about": "Planung und Bau von Anlagen für Seen, Bäder und Naherholung mit Sicherheitskonzepten.",
+            "contact": "kommunal@wasserfreizeit-md.de | 0345 8811040"
+          },
+          {
+            "id": "sanitaer-riedel",
+            "name": "Sanitär Riedel GmbH & Co. KG",
+            "ceo": "Michael Riedel",
+            "address": "Bahnhofstraße 27, 06679 Hohenmölsen",
+            "local": true,
+            "services": ["Sanitäranlagen", "Wassertechnik", "Service"],
+            "about": "Regionale Fachfirma für robuste und barrierefreie Sanitärlösungen im öffentlichen Raum.",
+            "contact": "kontakt@sanitaer-riedel.de | 034441 73044"
+          }
+        ],
         "image": "./assets/mondsee.png",
         "beforeImage": "./assets/mondsee_vorher.png",
         "afterImage": "./assets/mondsee.png",
@@ -117,18 +205,60 @@
         "id": "quartier-agricolastrasse",
         "icon": "🏡",
         "title": "Quartiersaufwertung Agricolastraße",
+        "projectType": "Wohngebiet",
         "category": "Wohnumfeld",
+        "progress": "grün",
         "status": "Laufend",
         "address": "Agricolastraße, 06679 Hohenmölsen",
         "lat": 51.1547,
         "lng": 12.1049,
         "budgetEUR": 350000,
+        "budgetBreakdown": [
+          { "label": "Bestandsanalyse und Beteiligung", "amount": 28000, "note": "Bewohnerdialoge, Priorisierung und Entwurfsplanung." },
+          { "label": "Wegebau und Barrierefreiheit", "amount": 122000, "note": "Gehwege, Übergänge, sichere Querungsstellen." },
+          { "label": "Spiel- und Aufenthaltsflächen", "amount": 98000, "note": "Neue Spielangebote, Sitzbereiche, Aufenthaltsqualität." },
+          { "label": "Grünflächen und Entsiegelung", "amount": 56000, "note": "Bepflanzung, klimaangepasste Freiräume." },
+          { "label": "Beleuchtung und Sicherheit", "amount": 26000, "note": "Ergänzende Lichtpunkte und Orientierung." },
+          { "label": "Reserve/Risikopuffer", "amount": 20000, "note": "Unvorhergesehene Anpassungen im Bestand." }
+        ],
         "start": "2025",
         "end": "2026",
-        "short": "Verbesserung des Wohnumfeldes in den Quartieren.",
-        "why": "Mehr Aufenthaltsqualität, sichere Wege, Spiel- und Grünflächen sowie bessere Barrierefreiheit.",
+        "short": "Das Quartier wird schrittweise so umgestaltet, dass Wege sicherer, Freiflächen attraktiver und Alltagsrouten barriereärmer werden. Neben neuen Aufenthalts- und Spielbereichen werden Grünstrukturen gestärkt, damit das Wohnumfeld für Familien, Senioren und mobilitätseingeschränkte Menschen gleichermaßen besser nutzbar ist.",
+        "why": "Die Maßnahme ist erforderlich, weil bestehende Wegebeziehungen und Freiflächen den heutigen Anforderungen an Sicherheit, Inklusion und Klimaanpassung nur eingeschränkt entsprechen. Die Dauer entsteht durch abschnittsweise Umsetzung im laufenden Wohnbetrieb, damit Erreichbarkeit und Nutzung des Quartiers jederzeit gewährleistet bleiben.",
         "traffic": "Abschnittsweise Einschränkungen einzelner Wege; keine Vollsperrungen.",
         "trades": ["Grünflächen", "Spielgeräte", "Wegebau"],
+        "companies": [
+          {
+            "id": "wohnraum-service-hohenmoelsen",
+            "name": "Wohnraum Service Hohenmölsen eG",
+            "ceo": "Claudia Neumann",
+            "address": "Agricolastraße 9, 06679 Hohenmölsen",
+            "local": true,
+            "services": ["Quartiersmanagement", "Mieterservice", "Bestandskoordination"],
+            "about": "Genossenschaftlicher Partner für soziale Quartiersentwicklung und wohnortnahe Abstimmung.",
+            "contact": "quartier@wohnraum-hohenmoelsen.de | 034441 44021"
+          },
+          {
+            "id": "spielraum-plan",
+            "name": "SpielRaum Planungsbüro GmbH",
+            "ceo": "Dr. Laura Benning",
+            "address": "Mühlenweg 4, 04229 Leipzig",
+            "local": false,
+            "services": ["Spielplatzplanung", "Partizipation", "Sicherheitsprüfung"],
+            "about": "Fachbüro für kindgerechte Spiel- und Aufenthaltsflächen mit Beteiligungsverfahren.",
+            "contact": "kommunen@spielraum-plan.de | 0341 9012770"
+          },
+          {
+            "id": "pflasterfix-burgenland",
+            "name": "PflasterFix Burgenland GmbH",
+            "ceo": "Andreas Hofmann",
+            "address": "Gewerbering 6, 06667 Weißenfels",
+            "local": false,
+            "services": ["Wegebau", "Pflasterarbeiten", "Barrierefreie Übergänge"],
+            "about": "Spezialunternehmen für langlebige Wegebeläge und barrierefreie Erschließung im Wohnumfeld.",
+            "contact": "anfrage@pflasterfix-blk.de | 03443 821700"
+          }
+        ],
         "image": "./assets/quartier.png",
         "beforeImage": "./assets/quartier.png",
         "afterImage": "./assets/quartier.png",
@@ -146,6 +276,282 @@
             "title": "Spiel- & Grünflächen",
             "text": "Neue Sitzbereiche, Spielgeräte und Wege.",
             "image": "./assets/quartier.png"
+          }
+        ]
+      },
+      {
+        "id": "grundschule-sued-sanierung",
+        "icon": "🏫",
+        "title": "Energetische Sanierung Grundschule Süd",
+        "projectType": "Schule",
+        "category": "Bildung & Infrastruktur",
+        "progress": "gelb",
+        "status": "Ausführung",
+        "address": "Schulstraße 14, 06679 Hohenmölsen",
+        "lat": 51.1522,
+        "lng": 12.1017,
+        "budgetEUR": 1850000,
+        "budgetBreakdown": [
+          { "label": "Planung, Fachgutachten, Förderabwicklung", "amount": 185000, "note": "Energiestandard, Brandschutz, Bauphasenplanung." },
+          { "label": "Gebäudehülle (Dach/Fassade/Fenster)", "amount": 640000, "note": "Wärmeschutz und Instandsetzung der Außenbauteile." },
+          { "label": "Technische Gebäudeausrüstung", "amount": 470000, "note": "Heizung, Lüftung, Elektro, Mess-/Regeltechnik." },
+          { "label": "Innenausbau und Barrierefreiheit", "amount": 333000, "note": "Sanitär, Erschließung, Lernumfeld." },
+          { "label": "Interim/Umzug und Baustellenbetrieb", "amount": 111000, "note": "Bau im laufenden Schulbetrieb." },
+          { "label": "Reserve/Risikopuffer", "amount": 111000, "note": "Preis- und Bestandsrisiken." }
+        ],
+        "start": "2026",
+        "end": "2028",
+        "short": "Die Grundschule Süd wird energetisch und funktional modernisiert: Gebäudehülle, Haustechnik und Innenbereiche werden auf einen zukunftsfähigen Standard angehoben. Parallel werden barrierefreie Zugänge und robuste Lernumgebungen geschaffen, damit Schule und Betreuung langfristig zuverlässig betrieben werden können.",
+        "why": "Das Projekt ist notwendig, weil die bestehenden Bauteile hohe Energieverluste verursachen und pädagogische Nutzungen technisch einschränken. Die längere Laufzeit ergibt sich aus der Bauabwicklung in Ferien- und Teilabschnitten, damit Unterricht, Sicherheit und Baustellenlogistik parallel zuverlässig funktionieren.",
+        "traffic": "Temporäre Halteverbote im Umfeld der Schule während Lieferfenstern.",
+        "trades": ["Fassadensanierung", "Elektro", "Heizung/Lüftung", "Innenausbau"],
+        "companies": [
+          {
+            "id": "bildungsbau-saale",
+            "name": "BildungsBau Saale GmbH",
+            "ceo": "Katrin Vogler",
+            "address": "Dessauer Straße 51, 06118 Halle (Saale)",
+            "local": false,
+            "services": ["Schulbau", "Sanierungskoordination", "Baustellenlogistik"],
+            "about": "Spezialisiert auf Umbauten im laufenden Schulbetrieb mit abschnittsweiser Umsetzung.",
+            "contact": "schulbau@bildungsbau-saale.de | 0345 7712450"
+          },
+          {
+            "id": "elektro-heger-hm",
+            "name": "Elektro Heger Hohenmölsen e.K.",
+            "ceo": "Tobias Heger",
+            "address": "Weißenfelser Straße 30, 06679 Hohenmölsen",
+            "local": true,
+            "services": ["Elektroinstallation", "Datennetz", "Sicherheitsbeleuchtung"],
+            "about": "Regionaler Meisterbetrieb für öffentliche Gebäude und Schultechnik.",
+            "contact": "info@elektro-heger-hm.de | 034441 88322"
+          },
+          {
+            "id": "klimaform-gebaeudetechnik",
+            "name": "KlimaForm Gebäudetechnik GmbH",
+            "ceo": "Ralf Mertens",
+            "address": "An der Aue 17, 06712 Zeitz",
+            "local": false,
+            "services": ["Lüftung", "Heizung", "Wärmerückgewinnung"],
+            "about": "Planung und Umsetzung energieeffizienter TGA-Lösungen für kommunale Gebäude.",
+            "contact": "kommunal@klimaform-gmbh.de | 03441 559210"
+          }
+        ],
+        "image": "./assets/marktplatz.png",
+        "beforeImage": "./assets/marktplatz.png",
+        "afterImage": "./assets/marktplatz.png",
+        "milestones": [
+          {
+            "key": "vorplanung",
+            "date": "2026 Q1",
+            "title": "Vorplanung",
+            "text": "Energieaudit, Raumkonzept und Fördermittelabstimmung.",
+            "image": "./assets/marktplatz.png"
+          },
+          {
+            "key": "bauabschnitt-1",
+            "date": "2026 Q4",
+            "title": "Bauabschnitt 1",
+            "text": "Dach/Fassade und neue Fensteranlagen.",
+            "image": "./assets/marktplatz.png"
+          },
+          {
+            "key": "bauabschnitt-2",
+            "date": "2027 Q3",
+            "title": "Bauabschnitt 2",
+            "text": "Innenausbau, Technik und barrierefreie Erschließung.",
+            "image": "./assets/marktplatz.png"
+          },
+          {
+            "key": "abschluss",
+            "date": "2028",
+            "title": "Abschluss & Übergabe",
+            "text": "Finale Abnahmen und Inbetriebnahme.",
+            "image": "./assets/marktplatz.png"
+          }
+        ]
+      },
+      {
+        "id": "radweg-luetzen-hohenmoelsen",
+        "icon": "🚲",
+        "title": "Neubau Radweg Lützen–Hohenmölsen",
+        "projectType": "Straße",
+        "category": "Mobilität & Sicherheit",
+        "progress": "rot",
+        "status": "Genehmigungsphase",
+        "address": "B 91 Abschnitt Lützen–Hohenmölsen, 06679 Hohenmölsen",
+        "lat": 51.1671,
+        "lng": 12.0754,
+        "budgetEUR": 2450000,
+        "budgetBreakdown": [
+          { "label": "Trassenplanung und Planfeststellung", "amount": 245000, "note": "Vorplanung, Vermessung, Genehmigungsunterlagen." },
+          { "label": "Grunderwerb und Flächenfreimachung", "amount": 367500, "note": "Notwendige Flächen, Anpassungen im Bestand." },
+          { "label": "Erd- und Wegebau", "amount": 980000, "note": "Unterbau, Trag-/Deckschicht, Entwässerung." },
+          { "label": "Sicherheitsinfrastruktur", "amount": 367500, "note": "Querungen, Schutzsysteme, Markierung." },
+          { "label": "Beleuchtung und technische Ausrüstung", "amount": 245000, "note": "Lichtpunkte, Anschlüsse, Steuerung." },
+          { "label": "Reserve/Risikopuffer", "amount": 245000, "note": "Preissteigerungen und Baugrundrisiken." }
+        ],
+        "start": "2027",
+        "end": "2029",
+        "short": "Zwischen Lützen und Hohenmölsen entsteht eine durchgängige, klar geführte Radverbindung mit sicheren Querungen und einheitlichem Ausbaustandard. Das Projekt verbessert Alltagswege für Pendler, Schüler und Freizeitradverkehr und reduziert Konflikte mit dem Kfz-Verkehr.",
+        "why": "Die Umsetzung ist notwendig, weil auf dem heutigen Abschnitt Sicherheitslücken und Netzbrüche bestehen. Die Gesamtdauer ist höher, da Planfeststellung, Flächenzugriffe, Fördermittelbindung und abschnittsweiser Bau entlang einer verkehrlich sensiblen Achse aufeinander abgestimmt werden müssen.",
+        "traffic": "In Bauphasen abschnittsweise Verkehrsführung mit Temporeduzierung.",
+        "trades": ["Straßenbau", "Markierung", "Entwässerung", "Beleuchtung"],
+        "companies": [
+          {
+            "id": "veloinfra-planung",
+            "name": "VeloInfra Planungsgesellschaft mbH",
+            "ceo": "Sven Krüger",
+            "address": "Hauptstraße 2, 04109 Leipzig",
+            "local": false,
+            "services": ["Radverkehrsplanung", "Genehmigung", "Bürgerbeteiligung"],
+            "about": "Planungsbüro für regionale Radverkehrsachsen und sichere Querungen.",
+            "contact": "team@velo-infra.de | 0341 5500130"
+          },
+          {
+            "id": "strabag-nahverkehr-blk",
+            "name": "Nahverkehrswegebau BLK GmbH",
+            "ceo": "Dirk Schade",
+            "address": "Gewerbepark 11, 06618 Naumburg",
+            "local": false,
+            "services": ["Wegebau", "Asphalt", "Schutzplanken"],
+            "about": "Ausführung von kommunalen Verkehrsprojekten im Burgenlandkreis.",
+            "contact": "projekte@nahverkehrswegebau-blk.de | 03445 778300"
+          },
+          {
+            "id": "stadtwerke-licht-hm",
+            "name": "Stadtwerke Hohenmölsen Infrastruktur GmbH",
+            "ceo": "Marion Seidel",
+            "address": "Rudolf-Breitscheid-Straße 5, 06679 Hohenmölsen",
+            "local": true,
+            "services": ["Netzanschluss", "Beleuchtung", "Betriebsservice"],
+            "about": "Kommunaler Infrastrukturdienstleister für Beleuchtung und technische Anbindungen.",
+            "contact": "infrastruktur@stadtwerke-hm.de | 034441 65010"
+          }
+        ],
+        "image": "./assets/quartier.png",
+        "beforeImage": "./assets/quartier.png",
+        "afterImage": "./assets/quartier.png",
+        "milestones": [
+          {
+            "key": "linie-festlegung",
+            "date": "2026 Q4",
+            "title": "Linienfestlegung",
+            "text": "Festlegung Trasse, Querungspunkte und Flächenbedarf.",
+            "image": "./assets/quartier.png"
+          },
+          {
+            "key": "genehmigung",
+            "date": "2027",
+            "title": "Genehmigungen",
+            "text": "Abschluss Planfeststellung und Förderzusage.",
+            "image": "./assets/quartier.png"
+          },
+          {
+            "key": "bau-start",
+            "date": "2028",
+            "title": "Baustart",
+            "text": "Beginn Tiefbau und Herstellung erster Abschnitte.",
+            "image": "./assets/quartier.png"
+          },
+          {
+            "key": "inbetriebnahme",
+            "date": "2029",
+            "title": "Inbetriebnahme",
+            "text": "Freigabe der Gesamtstrecke für den Radverkehr.",
+            "image": "./assets/quartier.png"
+          }
+        ]
+      },
+      {
+        "id": "sporthalle-ost-modernisierung",
+        "icon": "🏟️",
+        "title": "Modernisierung Sporthalle Ost",
+        "projectType": "Sport",
+        "category": "Soziale Infrastruktur",
+        "progress": "gelb",
+        "status": "Ausschreibung",
+        "address": "Am Stadion 4, 06679 Hohenmölsen",
+        "lat": 51.1474,
+        "lng": 12.1092,
+        "budgetEUR": 980000,
+        "budgetBreakdown": [
+          { "label": "Planung und Ausschreibung", "amount": 98000, "note": "Nutzungs- und Sanierungskonzept, Vergabevorbereitung." },
+          { "label": "Hallenboden und Sportflächen", "amount": 245000, "note": "Belag, Markierung, Unterkonstruktion." },
+          { "label": "Umkleiden und Sanitär", "amount": 225000, "note": "Sanitärtechnik, barrierearme Erschließung." },
+          { "label": "Tribüne, Sicherheit, Brandschutz", "amount": 176000, "note": "Fluchtwege, Sicherheitseinrichtungen, Anpassungen." },
+          { "label": "Technik und Energie", "amount": 137000, "note": "Lüftung, Beleuchtung, Steuerung." },
+          { "label": "Reserve/Risikopuffer", "amount": 99000, "note": "Preis- und Bestandspuffer." }
+        ],
+        "start": "2026",
+        "end": "2027",
+        "short": "Die Sporthalle Ost erhält eine technische und funktionale Modernisierung mit neuem Hallenboden, sanierten Umkleiden und verbessertem barrierearmen Zugang. Dadurch können Schul- und Vereinssport verlässlicher, sicherer und mit geringeren Betriebsausfällen durchgeführt werden.",
+        "why": "Notwendig ist die Maßnahme aufgrund des baulichen Verschleißes und steigender Anforderungen an Sicherheit, Inklusion und Betriebssicherheit. Die Laufzeit ergibt sich aus der Bauabfolge zwischen Trainings- und Wettkampfzeiten sowie aus technischen Abhängigkeiten zwischen Sanitär-, Boden- und Sicherheitsgewerken.",
+        "traffic": "Parkflächen an Spieltagen zeitweise eingeschränkt; Zufahrt bleibt möglich.",
+        "trades": ["Innenausbau", "Sanitär", "Bodenbelag", "Tribünen"],
+        "companies": [
+          {
+            "id": "arena-baukonzept",
+            "name": "Arena Baukonzept GmbH",
+            "ceo": "Jan Reuter",
+            "address": "Sportforum 12, 04317 Leipzig",
+            "local": false,
+            "services": ["Sportstättenbau", "Sanierung", "Baukoordination"],
+            "about": "Planung und Realisierung kommunaler Sportstätten mit laufendem Betrieb.",
+            "contact": "projekt@arena-baukonzept.de | 0341 4480270"
+          },
+          {
+            "id": "bodenwerk-hm",
+            "name": "BodenWerk Hohenmölsen GmbH",
+            "ceo": "Ronny Schiller",
+            "address": "Werkstraße 2, 06679 Hohenmölsen",
+            "local": true,
+            "services": ["Sportboden", "Beschichtung", "Wartung"],
+            "about": "Fachfirma für elastische Hallenbeläge und dauerhafte Linierungssysteme.",
+            "contact": "service@bodenwerk-hm.de | 034441 12055"
+          },
+          {
+            "id": "sanikonzept-ost",
+            "name": "SaniKonzept Ost GmbH",
+            "ceo": "Petra Klose",
+            "address": "Otto-Lilienthal-Straße 9, 06749 Bitterfeld-Wolfen",
+            "local": false,
+            "services": ["Umkleiden", "Sanitär", "Barrierefreie Ausstattung"],
+            "about": "Sanierungsdienstleister für öffentliche Gebäude mit Fokus auf moderne Sanitärlösungen.",
+            "contact": "kommunal@sanikonzept-ost.de | 03493 733810"
+          }
+        ],
+        "image": "./assets/mondsee.png",
+        "beforeImage": "./assets/mondsee_vorher.png",
+        "afterImage": "./assets/mondsee.png",
+        "milestones": [
+          {
+            "key": "bedarfsplanung",
+            "date": "2026 Q1",
+            "title": "Bedarfsplanung",
+            "text": "Abstimmung mit Schulen, Vereinen und Betreiber.",
+            "image": "./assets/mondsee_vorher.png"
+          },
+          {
+            "key": "vergabe",
+            "date": "2026 Q3",
+            "title": "Vergabe",
+            "text": "Vergabe Hauptgewerke und Materialbestellung.",
+            "image": "./assets/mondsee.png"
+          },
+          {
+            "key": "umbau",
+            "date": "2027 Q1",
+            "title": "Umbauphase",
+            "text": "Bauarbeiten in Halle und Nebenräumen.",
+            "image": "./assets/mondsee.png"
+          },
+          {
+            "key": "wiedereroeffnung",
+            "date": "2027 Q4",
+            "title": "Wiedereröffnung",
+            "text": "Abnahme, Inbetriebnahme und Freigabe für den Betrieb.",
+            "image": "./assets/mondsee.png"
           }
         ]
       }
