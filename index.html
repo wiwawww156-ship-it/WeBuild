@@ -30,7 +30,7 @@
     .fade-in { animation: fadeIn 0.3s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     body { overflow-x: hidden; }
-    #map { height: 360px; }
+    #map { height: 52vh; min-height: 360px; max-height: 560px; }
     .line-clamp-2 {
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -60,10 +60,6 @@
             <span id="modeToggleIcon" class="text-base">🏛️</span>
             <span id="modeToggleLabel" class="hidden md:inline">Verwaltung</span>
           </button>
-          <button onclick="toggleMap()" class="text-sm font-medium text-slate-600 hover:text-wb-primary2 flex items-center gap-1">
-            <span class="hidden md:inline">🗺️ Karte</span>
-            <span class="md:hidden text-lg">🗺️</span>
-          </button>
           <button onclick="readAloud()"
             class="text-sm font-medium bg-wb-soft text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-100 flex items-center gap-1 border border-slate-200">
             🔊 <span class="hidden md:inline">Vorlesen</span>
@@ -73,20 +69,7 @@
     </div>
   </nav>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div id="map-panel" class="hidden mb-6 bg-white border border-slate-200 rounded-2xl p-4">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <div class="font-semibold">Karte</div>
-          <div class="text-sm text-slate-500">Pins erscheinen, wenn Lat/Lng in `projekte.json` gesetzt sind.</div>
-        </div>
-        <button onclick="toggleMap()" class="text-sm font-medium text-slate-600 hover:text-wb-primary2">Schließen</button>
-      </div>
-      <div class="mt-4 rounded-xl overflow-hidden border border-slate-200">
-        <div id="map"></div>
-      </div>
-    </div>
-
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
     <div id="admin-view" class="hidden fade-in">
       <div class="bg-white border border-slate-200 rounded-2xl p-4 md:p-6">
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -124,119 +107,99 @@
     </div>
 
     <div id="dashboard-view" class="fade-in">
-      <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 class="text-2xl font-bold text-slate-900">Stadtentwicklungsprojekte</h1>
-          <p class="text-slate-500 text-sm mt-1">
-            Daten kommen aus <span class="font-mono">projekte.json</span> (Bereich <span class="font-mono">table.rows</span>).
-          </p>
-        </div>
-        <div class="w-full md:w-[520px] grid grid-cols-1 md:grid-cols-3 gap-2">
-          <label class="md:col-span-2 relative">
+      <div class="mb-4">
+        <h1 class="text-2xl font-bold text-slate-900">Stadtentwicklungsprojekte</h1>
+        <p class="text-slate-500 text-sm mt-1">
+          Karte, Projektliste und Details · <span id="mapResultCount"></span>
+        </p>
+
+        <div class="mt-4 w-full space-y-2">
+          <label class="w-full relative block">
             <span class="sr-only">Suche</span>
             <input id="search"
               class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
               placeholder="Suche: Titel, Adresse, Kategorie, Status …" />
           </label>
-          <select id="statusFilter"
-            class="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-wb-ring">
-            <option value="">Alle Status</option>
-          </select>
+          <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <select id="statusFilter"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+              aria-label="Projektstatus">
+              <option value="">Alle Status</option>
+            </select>
+            <select id="typeFilter"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+              aria-label="Art des Projektes">
+              <option value="">Alle Arten</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <section class="lg:col-span-2">
-          <div class="flex items-center justify-between">
-            <div class="font-semibold">Liste</div>
-            <div id="resultCount" class="text-sm text-slate-500"></div>
+      <div class="rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+        <div id="map"></div>
+      </div>
+      <p class="mt-2 text-xs text-slate-500 text-center">
+        ● grün = weit fortgeschritten · ● gelb = in Arbeit · ● rot = früher Stand
+      </p>
+
+      <section class="mt-8">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-slate-900">Projekte</h2>
+          <div id="resultCount" class="text-sm text-slate-500"></div>
+        </div>
+        <div id="projectList" class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </section>
+
+      <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section class="bg-white border border-slate-200 rounded-2xl p-4 md:p-5">
+          <div class="font-semibold">Bürger-Vorschlag einreichen</div>
+          <div class="text-xs text-slate-500 mt-1">Neue Bauvorhaben oder Verbesserungen an die Stadtverwaltung melden.</div>
+
+          <div class="mt-3 grid grid-cols-1 gap-2">
+            <input id="citizenAddress" type="text"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+              placeholder="Genaue Adresse / Ort" />
+            <input id="citizenPurpose" type="text"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+              placeholder="Zweck (z. B. Verkehrssicherheit, Spielplatz, Radweg)" />
+            <input id="citizenType" type="text"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+              placeholder="Art des Vorhabens (z. B. Straße, Schule, Grünfläche)" />
+            <textarea id="citizenDescription"
+              class="w-full min-h-[90px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+              placeholder="Beschreibung: Was soll umgesetzt werden und warum?"></textarea>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input id="citizenContactEmail" type="email"
+                class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+                placeholder="Kontakt E-Mail (optional)" />
+              <input id="citizenContactPhone" type="text"
+                class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
+                placeholder="Kontakt Telefon (optional)" />
+            </div>
+            <select id="citizenPriority"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring">
+              <option value="">Priorität (optional)</option>
+              <option value="niedrig">Niedrig</option>
+              <option value="mittel">Mittel</option>
+              <option value="hoch">Hoch</option>
+            </select>
+            <button onclick="submitCitizenProposal()"
+              class="text-sm font-semibold bg-wb-primary text-white rounded-xl px-3 py-2 hover:bg-wb-primary2">
+              An Stadtverwaltung senden
+            </button>
           </div>
-          <div id="projectList" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+          <div id="citizenProposalFeedback" class="mt-2 text-xs text-slate-500"></div>
+          <div class="mt-4">
+            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Zuletzt eingereicht</div>
+            <div id="citizenProposalList" class="mt-2 space-y-2"></div>
+          </div>
         </section>
 
-        <aside class="lg:col-span-1">
-          <div class="bg-white border border-slate-200 rounded-2xl p-4">
-            <div class="flex items-center justify-between">
-              <div class="font-semibold">Favoriten</div>
-              <div class="text-xs text-slate-500">max. 3</div>
-            </div>
-            <div id="favoritesList" class="mt-3 space-y-2"></div>
-
-            <div class="mt-4 pt-4 border-t border-slate-200">
-              <div class="flex items-center justify-between">
-                <div class="font-semibold">Schnellauswahl</div>
-                <div class="text-xs text-slate-500">nach Art gruppiert</div>
-              </div>
-              <div class="mt-1 text-xs text-slate-500">● grün = weit fortgeschritten · ● gelb = in Arbeit · ● rot = früher Stand</div>
-              <div id="quickSelectList" class="mt-3 space-y-3"></div>
-            </div>
-
-            <div class="mt-4 pt-4 border-t border-slate-200">
-              <div class="font-semibold">Daten-Input (Tabelle)</div>
-              <div class="text-sm text-slate-600 mt-1">
-                Pflege deine Projekte in <span class="font-mono">projekte.json → table.rows</span>.
-                Spalten sind in <span class="font-mono">table.columns</span> dokumentiert.
-              </div>
-            </div>
-            <div class="mt-4 pt-4 border-t border-slate-200">
-              <div class="font-semibold">KI-Chat (App)</div>
-              <div class="text-xs text-slate-500 mt-1">Fragen zur App, Funktionen oder Daten stellen.</div>
-              <div id="appChatMessages" class="mt-3 space-y-2 max-h-52 overflow-y-auto pr-1"></div>
-              <div class="mt-2 flex gap-2">
-                <input id="appChatInput" type="text"
-                  class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
-                  placeholder="z. B. Welche Projekte sind in Planung?"
-                  onkeydown="if(event.key==='Enter'){sendAppChat();}" />
-                <button onclick="sendAppChat()"
-                  class="text-sm font-semibold bg-wb-primary text-white rounded-xl px-3 py-2 hover:bg-wb-primary2">Senden</button>
-              </div>
-            </div>
-            <div class="mt-4 pt-4 border-t border-slate-200">
-              <div class="font-semibold">Bürger-Vorschlag einreichen</div>
-              <div class="text-xs text-slate-500 mt-1">Neue Bauvorhaben oder Verbesserungen an die Stadtverwaltung melden.</div>
-
-              <div class="mt-3 grid grid-cols-1 gap-2">
-                <input id="citizenAddress" type="text"
-                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
-                  placeholder="Genaue Adresse / Ort" />
-                <input id="citizenPurpose" type="text"
-                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
-                  placeholder="Zweck (z. B. Verkehrssicherheit, Spielplatz, Radweg)" />
-                <input id="citizenType" type="text"
-                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
-                  placeholder="Art des Vorhabens (z. B. Straße, Schule, Grünfläche)" />
-                <textarea id="citizenDescription"
-                  class="w-full min-h-[90px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
-                  placeholder="Beschreibung: Was soll umgesetzt werden und warum?"></textarea>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <input id="citizenContactEmail" type="email"
-                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
-                    placeholder="Kontakt E-Mail (optional)" />
-                  <input id="citizenContactPhone" type="text"
-                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
-                    placeholder="Kontakt Telefon (optional)" />
-                </div>
-                <select id="citizenPriority"
-                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring">
-                  <option value="">Priorität (optional)</option>
-                  <option value="niedrig">Niedrig</option>
-                  <option value="mittel">Mittel</option>
-                  <option value="hoch">Hoch</option>
-                </select>
-                <button onclick="submitCitizenProposal()"
-                  class="text-sm font-semibold bg-wb-primary text-white rounded-xl px-3 py-2 hover:bg-wb-primary2">
-                  An Stadtverwaltung senden
-                </button>
-              </div>
-
-              <div id="citizenProposalFeedback" class="mt-2 text-xs text-slate-500"></div>
-              <div class="mt-3">
-                <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Zuletzt eingereicht</div>
-                <div id="citizenProposalList" class="mt-2 space-y-2"></div>
-              </div>
-            </div>
-          </div>
-        </aside>
+        <section class="bg-white border border-slate-200 rounded-2xl p-4 md:p-5">
+          <div class="font-semibold">KI-Chat</div>
+          <div class="text-xs text-slate-500 mt-1">Fragen zur App, Funktionen oder Projektdaten? Öffne den Chat über das Symbol unten rechts auf der Seite.</div>
+        </section>
       </div>
     </div>
 
@@ -252,42 +215,39 @@
         </div>
         <div class="p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="md:col-span-2">
-            <img id="detail-image" class="w-full h-56 md:h-72 object-cover rounded-xl border border-slate-200 bg-slate-100" alt="" />
-            <div id="milestone-caption" class="mt-2 text-xs text-slate-500"></div>
+            <div id="detail-image-wrap" class="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 h-56 md:h-72">
+              <img id="detail-image" class="absolute inset-0 w-full h-full object-cover" alt="" />
 
-            <div id="beforeAfterPanel" class="hidden mt-4">
-              <div class="flex items-end justify-between gap-4">
-                <div>
-                  <div class="font-semibold">Vorher / Nachher</div>
-                  <div class="text-xs text-slate-500 mt-1">Ziehe den Regler, um den Vergleich zu sehen.</div>
+              <div id="ba-layer" class="hidden absolute inset-0">
+                <img id="baAfter" class="absolute inset-0 w-full h-full object-cover" alt="" />
+                <div id="baClip" class="absolute inset-0 overflow-hidden" style="width: 50%;">
+                  <img id="baBefore" class="absolute inset-0 w-full h-full object-cover" alt="" />
                 </div>
-                <div class="text-xs text-slate-500"><span id="baPct">50</span>%</div>
+                <div id="baDivider" class="absolute top-0 bottom-0 w-0.5 bg-white/90 shadow-sm pointer-events-none z-10" style="left: 50%;"></div>
+                <div id="baHandle" class="absolute top-0 bottom-0 z-20 cursor-ew-resize touch-none" style="left: 50%;" aria-hidden="true">
+                  <button id="baHandleBtn" type="button"
+                    class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-11 h-11 rounded-full bg-white/95 border border-slate-200 shadow-md flex items-center justify-center text-wb-primary2 hover:bg-white transition-colors"
+                    aria-label="Vorher/Nachher-Vergleich verschieben">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M8 7l-4 4 4 4"/><path d="M16 7l4 4-4 4"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
 
-              <div class="mt-3">
-                <div class="relative w-full h-56 md:h-72 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
-                  <img id="baAfter" class="absolute inset-0 w-full h-full object-cover" alt="" />
-                  <div id="baClip" class="absolute inset-0 overflow-hidden" style="width: 50%;">
-                    <img id="baBefore" class="absolute inset-0 w-full h-full object-cover" alt="" />
-                  </div>
-                  <div id="baHandle" class="absolute top-0 bottom-0" style="left: 50%;">
-                    <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2">
-                      <div class="w-10 h-10 rounded-full bg-white/90 border border-slate-200 shadow-sm flex items-center justify-center">
-                        <div class="w-1 h-6 rounded bg-wb-primary2"></div>
-                      </div>
-                      <div class="mt-2 flex gap-2 justify-center text-[11px] text-white drop-shadow">
-                        <span class="px-2 py-0.5 rounded-full bg-black/40">Vorher</span>
-                        <span class="px-2 py-0.5 rounded-full bg-black/40">Nachher</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <input id="baRange" type="range" min="0" max="100" value="50"
-                  class="mt-3 w-full"
-                  style="accent-color: #2E6AA3;"
-                  oninput="onBeforeAfterChange(this.value)" />
-              </div>
+              <button id="milestone-prev-btn" type="button" onclick="navigateMilestone(-1)"
+                class="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/90 border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 hover:bg-white hover:text-wb-primary2 transition-colors hidden"
+                aria-label="Vorherige Etappe">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <button id="milestone-next-btn" type="button" onclick="navigateMilestone(1)"
+                class="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/90 border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 hover:bg-white hover:text-wb-primary2 transition-colors hidden"
+                aria-label="Nächste Etappe">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+              <div id="milestone-counter" class="absolute bottom-2 right-2 z-30 px-2 py-0.5 rounded-full bg-black/50 text-white text-[11px] font-medium hidden"></div>
             </div>
+            <div id="milestone-caption" class="mt-2 text-xs text-slate-500"></div>
 
             <div id="milestone-panel" class="mt-4">
               <div class="flex items-end justify-between gap-4">
@@ -373,22 +333,9 @@
                 <div id="notifyList" class="mt-3 space-y-2"></div>
               </div>
               <div class="mt-4 pt-4 border-t border-slate-200">
-                <div class="font-semibold">KI-Chat (Projekt)</div>
-                <div class="text-xs text-slate-500 mt-1">Fragen speziell zu diesem Projekt stellen.</div>
-                <div id="projectChatMessages" class="mt-3 space-y-2 max-h-52 overflow-y-auto pr-1"></div>
-                <div class="mt-2 flex gap-2">
-                  <input id="projectChatInput" type="text"
-                    class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-wb-ring"
-                    placeholder="z. B. Wann ist die Fertigstellung?"
-                    onkeydown="if(event.key==='Enter'){sendProjectChat();}" />
-                  <button onclick="sendProjectChat()"
-                    class="text-sm font-semibold bg-wb-primary text-white rounded-xl px-3 py-2 hover:bg-wb-primary2">Senden</button>
-                </div>
-              </div>
-              <div class="mt-4 pt-4 border-t border-slate-200">
-                <button onclick="focusOnMap(activeProjectId)"
+                <button onclick="closeDetailAndFocusMap()"
                   class="w-full text-sm font-semibold bg-wb-primary text-white rounded-xl py-2.5 hover:bg-wb-primary2">
-                  Auf Karte anzeigen
+                  Zurück zur Karte
                 </button>
               </div>
             </div>
@@ -411,7 +358,6 @@
 
     const FAVORITES_KEY = 'webuild:favorites:v1';
     const SUBSCRIPTIONS_KEY = 'webuild:subscriptions:v1';
-    const CHAT_KEY = 'webuild:chat:v1';
     const PROPOSALS_KEY = 'webuild:citizen-proposals:v1';
 
     function getFavorites() {
@@ -444,23 +390,6 @@
 
     function setSubscriptions(subs) {
       localStorage.setItem(SUBSCRIPTIONS_KEY, JSON.stringify(subs));
-    }
-
-    function getChatState() {
-      try {
-        const raw = localStorage.getItem(CHAT_KEY);
-        const obj = raw ? JSON.parse(raw) : {};
-        return {
-          app: Array.isArray(obj.app) ? obj.app : [],
-          project: (obj.project && typeof obj.project === 'object') ? obj.project : {}
-        };
-      } catch {
-        return { app: [], project: {} };
-      }
-    }
-
-    function setChatState(next) {
-      localStorage.setItem(CHAT_KEY, JSON.stringify(next));
     }
 
     function getCitizenProposals() {
@@ -549,14 +478,7 @@
       };
     }
 
-    function toggleMap() {
-      if (APP_MODE !== 'citizen') return;
-      const panel = document.getElementById('map-panel');
-      const isHidden = panel.classList.contains('hidden');
-      panel.classList.toggle('hidden', !isHidden);
-      if (isHidden) ensureMap();
-      if (isHidden) setTimeout(() => map && map.invalidateSize(), 50);
-    }
+    function toggleMap() {}
 
     function setMode(mode) {
       APP_MODE = mode;
@@ -568,7 +490,6 @@
 
       // panels
       document.getElementById('admin-view').classList.toggle('hidden', !isAdmin);
-      document.getElementById('map-panel').classList.toggle('hidden', true);
 
       // citizen views
       document.getElementById('dashboard-view').classList.toggle('hidden', isAdmin || !!activeProjectId);
@@ -579,6 +500,8 @@
         renderAdmin();
       } else {
         render();
+        ensureMap();
+        setTimeout(() => map && map.invalidateSize(), 50);
       }
     }
 
@@ -589,8 +512,17 @@
     function closeDetail() {
       activeProjectId = null;
       document.getElementById('detail-view').classList.add('hidden');
-      if (APP_MODE === 'citizen') document.getElementById('dashboard-view').classList.remove('hidden');
+      if (APP_MODE === 'citizen') {
+        document.getElementById('dashboard-view').classList.remove('hidden');
+        setTimeout(() => map && map.invalidateSize(), 50);
+      }
       window.speechSynthesis?.cancel?.();
+    }
+
+    function closeDetailAndFocusMap() {
+      const id = activeProjectId;
+      closeDetail();
+      if (id) setTimeout(() => focusOnMap(id), 100);
     }
 
     function openDetail(id, opts = { scroll: true }) {
@@ -616,10 +548,8 @@
 
       renderMilestones(p);
       renderMilestoneMedia(p);
-      renderBeforeAfter(p);
       renderCompanies(p);
       renderSubscriptions(p);
-      renderProjectChat(p.id);
 
       document.getElementById('detail-short').textContent = p.short || '—';
       document.getElementById('detail-why').textContent = p.why || '—';
@@ -654,60 +584,159 @@
       return p.milestones.find(m => (m.key || '') === key) || p.milestones[0] || null;
     }
 
+    function hasBeforeAfter(p) {
+      const before = (p?.beforeImage || '').trim();
+      const after = (p?.afterImage || '').trim();
+      return before && after && before !== after;
+    }
+
     function renderMilestoneMedia(p) {
       const img = document.getElementById('detail-image');
+      const baLayer = document.getElementById('ba-layer');
       const cap = document.getElementById('milestone-caption');
+      const prevBtn = document.getElementById('milestone-prev-btn');
+      const nextBtn = document.getElementById('milestone-next-btn');
+      const counter = document.getElementById('milestone-counter');
 
+      const milestones = p.milestones || [];
       const ms = getActiveMilestone(p);
-      const src = ms?.image || p.image || '';
+      const baMode = hasBeforeAfter(p);
 
-      if (src) {
-        img.src = src;
-        img.alt = p.title || '';
+      if (baMode) {
+        const beforeEl = document.getElementById('baBefore');
+        const afterEl = document.getElementById('baAfter');
+        beforeEl.src = p.beforeImage.trim();
+        afterEl.src = p.afterImage.trim();
+        beforeEl.alt = `${p.title} (Vorher)`;
+        afterEl.alt = `${p.title} (Nachher)`;
+        baLayer.classList.remove('hidden');
+        img.classList.add('hidden');
+        onBeforeAfterChange(50);
       } else {
-        img.removeAttribute('src');
-        img.alt = '';
+        baLayer?.classList.add('hidden');
+        img.classList.remove('hidden');
+        const src = ms?.image || p.image || '';
+        if (src) {
+          img.src = src;
+          img.alt = p.title || '';
+        } else {
+          img.removeAttribute('src');
+          img.alt = '';
+        }
       }
 
       if (ms) {
         const parts = [ms.date, ms.title].filter(Boolean);
-        cap.textContent = parts.length ? `Etappe: ${parts.join(' – ')}` : '';
+        const baHint = baMode ? ' · Ziehe das Icon auf dem Bild für Vorher/Nachher' : '';
+        cap.textContent = parts.length ? `Etappe: ${parts.join(' – ')}${baHint}` : (baMode ? 'Ziehe das Icon auf dem Bild für Vorher/Nachher' : '');
       } else {
-        cap.textContent = '';
+        cap.textContent = baMode ? 'Ziehe das Icon auf dem Bild für Vorher/Nachher' : '';
+      }
+
+      const showNav = milestones.length > 1;
+      const activeKey = ms?.key || '';
+      const activeIdx = milestones.findIndex(m => (m.key || '') === activeKey);
+
+      if (prevBtn) {
+        prevBtn.classList.toggle('hidden', !showNav);
+        prevBtn.disabled = !showNav || activeIdx <= 0;
+        prevBtn.classList.toggle('opacity-40', prevBtn.disabled);
+        prevBtn.classList.toggle('pointer-events-none', prevBtn.disabled);
+      }
+      if (nextBtn) {
+        nextBtn.classList.toggle('hidden', !showNav);
+        nextBtn.disabled = !showNav || activeIdx >= milestones.length - 1;
+        nextBtn.classList.toggle('opacity-40', nextBtn.disabled);
+        nextBtn.classList.toggle('pointer-events-none', nextBtn.disabled);
+      }
+      if (counter) {
+        if (showNav && activeIdx >= 0) {
+          counter.textContent = `${activeIdx + 1} / ${milestones.length}`;
+          counter.classList.remove('hidden');
+        } else {
+          counter.classList.add('hidden');
+        }
       }
     }
 
-    function renderBeforeAfter(p) {
-      const panel = document.getElementById('beforeAfterPanel');
-      const before = (p.beforeImage || '').trim();
-      const after = (p.afterImage || '').trim();
-      if (!(before && after)) {
-        panel.classList.add('hidden');
-        return;
-      }
+    function navigateMilestone(delta) {
+      if (!activeProjectId) return;
+      const p = PROJECTS.find(x => x.id === activeProjectId);
+      if (!p?.milestones?.length) return;
 
-      panel.classList.remove('hidden');
-      const beforeEl = document.getElementById('baBefore');
-      const afterEl = document.getElementById('baAfter');
-      beforeEl.src = before;
-      afterEl.src = after;
-      beforeEl.alt = `${p.title} (Vorher)`;
-      afterEl.alt = `${p.title} (Nachher)`;
+      const milestones = p.milestones;
+      const active = getActiveMilestone(p);
+      const activeKey = active?.key || '';
+      let idx = milestones.findIndex(m => (m.key || '') === activeKey);
+      if (idx < 0) idx = 0;
 
-      onBeforeAfterChange(50, { setRange: true });
+      const nextIdx = idx + delta;
+      if (nextIdx < 0 || nextIdx >= milestones.length) return;
+
+      const next = milestones[nextIdx];
+      const key = (next.key || '').trim() || `${p.id}:m${nextIdx}`;
+      selectMilestone(p.id, key);
     }
 
-    function onBeforeAfterChange(value, opts = { setRange: false }) {
+    function onBeforeAfterChange(value) {
       const v = Math.max(0, Math.min(100, Number(value)));
       const clip = document.getElementById('baClip');
       const handle = document.getElementById('baHandle');
-      const pct = document.getElementById('baPct');
-      const range = document.getElementById('baRange');
+      const divider = document.getElementById('baDivider');
 
       if (clip) clip.style.width = `${v}%`;
       if (handle) handle.style.left = `${v}%`;
-      if (pct) pct.textContent = String(v);
-      if (opts?.setRange && range) range.value = String(v);
+      if (divider) divider.style.left = `${v}%`;
+    }
+
+    let baDragging = false;
+
+    function initBeforeAfterDrag() {
+      const wrap = document.getElementById('detail-image-wrap');
+      const handle = document.getElementById('baHandle');
+      const handleBtn = document.getElementById('baHandleBtn');
+      if (!wrap || !handle || wrap.dataset.baInit) return;
+      wrap.dataset.baInit = '1';
+
+      const setFromClientX = (clientX) => {
+        if (document.getElementById('ba-layer')?.classList.contains('hidden')) return;
+        const rect = wrap.getBoundingClientRect();
+        if (!rect.width) return;
+        const pct = ((clientX - rect.left) / rect.width) * 100;
+        onBeforeAfterChange(pct);
+      };
+
+      const startDrag = (e) => {
+        if (document.getElementById('ba-layer')?.classList.contains('hidden')) return;
+        baDragging = true;
+        e.preventDefault();
+      };
+
+      const onMove = (e) => {
+        if (!baDragging) return;
+        const x = e.touches ? e.touches[0].clientX : e.clientX;
+        setFromClientX(x);
+        e.preventDefault();
+      };
+
+      const endDrag = () => { baDragging = false; };
+
+      handle.addEventListener('mousedown', startDrag);
+      handle.addEventListener('touchstart', startDrag, { passive: false });
+      if (handleBtn) {
+        handleBtn.addEventListener('mousedown', startDrag);
+        handleBtn.addEventListener('touchstart', startDrag, { passive: false });
+      }
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('mouseup', endDrag);
+      window.addEventListener('touchend', endDrag);
+
+      wrap.addEventListener('click', (e) => {
+        if (document.getElementById('ba-layer')?.classList.contains('hidden')) return;
+        if (e.target.closest('#milestone-prev-btn, #milestone-next-btn, #baHandle, #baHandleBtn')) return;
+        setFromClientX(e.clientX);
+      });
     }
 
     function getActiveCompany(p) {
@@ -940,128 +969,6 @@
       `;
     }
 
-    function pushChatMessage(scope, projectId, role, text) {
-      const state = getChatState();
-      const entry = { role, text: String(text || ''), ts: Date.now() };
-      if (scope === 'app') {
-        state.app.push(entry);
-        state.app = state.app.slice(-30);
-      } else {
-        const key = projectId || 'unknown';
-        if (!Array.isArray(state.project[key])) state.project[key] = [];
-        state.project[key].push(entry);
-        state.project[key] = state.project[key].slice(-30);
-      }
-      setChatState(state);
-    }
-
-    function chatBubbleHtml(m) {
-      const isUser = m.role === 'user';
-      return `
-        <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
-          <div class="${isUser ? 'bg-wb-primary text-white' : 'bg-white text-slate-700 border border-slate-200'} max-w-[92%] text-xs rounded-xl px-3 py-2">
-            ${escapeHtml(m.text || '')}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderAppChat() {
-      const wrap = document.getElementById('appChatMessages');
-      if (!wrap) return;
-      const state = getChatState();
-      const msgs = state.app;
-      if (!msgs.length) {
-        wrap.innerHTML = `<div class="text-xs text-slate-500">Hallo! Ich beantworte Fragen zur App und zu den Projektdaten.</div>`;
-        return;
-      }
-      wrap.innerHTML = msgs.map(chatBubbleHtml).join('');
-      wrap.scrollTop = wrap.scrollHeight;
-    }
-
-    function renderProjectChat(projectId) {
-      const wrap = document.getElementById('projectChatMessages');
-      if (!wrap) return;
-      const state = getChatState();
-      const msgs = (state.project && Array.isArray(state.project[projectId])) ? state.project[projectId] : [];
-      if (!msgs.length) {
-        wrap.innerHTML = `<div class="text-xs text-slate-500">Frage mich alles zu diesem Projekt: Status, Firmen, Zeitplan, Fortschritt usw.</div>`;
-        return;
-      }
-      wrap.innerHTML = msgs.map(chatBubbleHtml).join('');
-      wrap.scrollTop = wrap.scrollHeight;
-    }
-
-    function generateAppReply(q) {
-      const query = String(q || '').toLowerCase();
-      const total = PROJECTS.length;
-      const inPlan = PROJECTS.filter(p => (p.status || '').toLowerCase().includes('planung') || (p.status || '').toLowerCase().includes('konzept')).length;
-      const types = Array.from(new Set(PROJECTS.map(p => p.projectType).filter(Boolean))).join(', ') || '—';
-
-      if (query.includes('wie viele') || query.includes('anzahl')) {
-        return `Aktuell sind ${total} Projekte in der App erfasst.`;
-      }
-      if (query.includes('kategorie') || query.includes('art')) {
-        return `Verfügbare Arten/Kategorien sind z. B.: ${types}.`;
-      }
-      if (query.includes('planung') || query.includes('konzept')) {
-        return `${inPlan} Projekte befinden sich aktuell in Planung/Konzeptphase.`;
-      }
-      if (query.includes('suche') || query.includes('filter')) {
-        return 'Du kannst oben über die Suche nach Titel, Adresse, Kategorie, Status und weiteren Schlagwörtern filtern.';
-      }
-      return 'Ich kann dir zur App helfen: Anzahl Projekte, Kategorien/Arten, Status, Suche, Karte, Favoriten, Zeitstrahl oder Vorher/Nachher.';
-    }
-
-    function generateProjectReply(p, q) {
-      const query = String(q || '').toLowerCase();
-      if (!p) return 'Projekt nicht gefunden.';
-      if (query.includes('status')) return `Status von "${p.title}": ${p.status || '—'}.`;
-      if (query.includes('fertig') || query.includes('ende') || query.includes('zeit')) {
-        return `Geplanter Zeitraum: ${[p.start, p.end].filter(Boolean).join(' → ') || '—'}.`;
-      }
-      if (query.includes('budget') || query.includes('kosten')) {
-        return `Budget: ${formatEUR(p.budgetEUR)}.`;
-      }
-      if (query.includes('firma') || query.includes('unternehmen')) {
-        const names = (p.companies || []).map(c => c.name).filter(Boolean);
-        return names.length
-          ? `Beteiligte Unternehmen: ${names.join(', ')}.`
-          : 'Für dieses Projekt sind noch keine Unternehmen hinterlegt.';
-      }
-      if (query.includes('verkehr') || query.includes('sperr')) {
-        return p.traffic || 'Für dieses Projekt sind derzeit keine Verkehrsinformationen hinterlegt.';
-      }
-      if (query.includes('fortschritt') || query.includes('ampel')) {
-        return `Ampel-Fortschritt: ${p.progress || 'rot'} (Art: ${p.projectType || '—'}).`;
-      }
-      return `Zum Projekt "${p.title}" kann ich dir Infos zu Status, Zeitplan, Budget, Unternehmen, Verkehr, Fortschritt und Meilensteinen geben.`;
-    }
-
-    function sendAppChat() {
-      const input = document.getElementById('appChatInput');
-      if (!input) return;
-      const q = (input.value || '').trim();
-      if (!q) return;
-      pushChatMessage('app', null, 'user', q);
-      pushChatMessage('app', null, 'ai', generateAppReply(q));
-      input.value = '';
-      renderAppChat();
-    }
-
-    function sendProjectChat() {
-      if (!activeProjectId) return;
-      const input = document.getElementById('projectChatInput');
-      if (!input) return;
-      const q = (input.value || '').trim();
-      if (!q) return;
-      const p = PROJECTS.find(x => x.id === activeProjectId);
-      pushChatMessage('project', activeProjectId, 'user', q);
-      pushChatMessage('project', activeProjectId, 'ai', generateProjectReply(p, q));
-      input.value = '';
-      renderProjectChat(activeProjectId);
-    }
-
     function setCitizenProposalFeedback(text, isError = false) {
       const el = document.getElementById('citizenProposalFeedback');
       if (!el) return;
@@ -1241,8 +1148,6 @@
       if (APP_MODE !== 'citizen') return;
       const p = PROJECTS.find(x => x.id === id);
       if (!p) return;
-      const panel = document.getElementById('map-panel');
-      if (panel.classList.contains('hidden')) toggleMap();
       ensureMap();
       if (!(Number.isFinite(p.lat) && Number.isFinite(p.lng))) return;
       map.setView([p.lat, p.lng], Math.max(map.getZoom(), 15));
@@ -1253,9 +1158,11 @@
     function filteredProjects() {
       const q = (document.getElementById('search')?.value || '').trim().toLowerCase();
       const status = document.getElementById('statusFilter')?.value || '';
+      const projectType = document.getElementById('typeFilter')?.value || '';
 
       return PROJECTS.filter(p => {
         if (status && p.status !== status) return false;
+        if (projectType && p.projectType !== projectType) return false;
         if (!q) return true;
         const hay = [
           p.id, p.title, p.projectType, p.category, p.progress, p.status, p.address, p.short, p.why, p.traffic,
@@ -1276,130 +1183,22 @@
       return { dot: 'bg-red-500', label: 'Rot' };
     }
 
-    function renderQuickSelect() {
-      const wrap = document.getElementById('quickSelectList');
-      wrap.innerHTML = '';
-
-      const groups = new Map();
-      PROJECTS.forEach(p => {
-        const key = p.projectType || 'Sonstiges';
-        if (!groups.has(key)) groups.set(key, []);
-        groups.get(key).push(p);
-      });
-
-      Array.from(groups.keys()).sort((a, b) => a.localeCompare(b, 'de')).forEach(groupName => {
-        const section = document.createElement('div');
-        const entries = groups.get(groupName).sort((a, b) => (a.title || '').localeCompare(b.title || '', 'de'));
-
-        const items = entries.map(p => {
-          const pm = progressMeta(p.progress);
-          return `
-            <button class="w-full text-left px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-wb-soft"
-              onclick="openDetail('${escapeAttr(p.id)}')">
-              <div class="flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                  <div class="font-semibold text-sm truncate">${escapeHtml(p.icon)} ${escapeHtml(p.title || '—')}</div>
-                  <div class="text-xs text-slate-500 truncate">${escapeHtml(p.category || '—')}</div>
-                </div>
-                <div class="shrink-0 flex items-center gap-1">
-                  <span class="inline-block w-2.5 h-2.5 rounded-full ${pm.dot}"></span>
-                  <span class="text-[11px] text-slate-500">${pm.label}</span>
-                </div>
-              </div>
-            </button>
-          `;
-        }).join('');
-
-        section.innerHTML = `
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">${escapeHtml(groupName)}</div>
-          <div class="space-y-2">${items}</div>
-        `;
-        wrap.appendChild(section);
-      });
+    function markerColor(progress) {
+      const p = (progress || '').toLowerCase().trim();
+      if (p === 'gruen' || p === 'grün' || p === 'green') return '#10b981';
+      if (p === 'gelb' || p === 'yellow') return '#fbbf24';
+      return '#ef4444';
     }
 
-    function renderFavorites() {
-      const wrap = document.getElementById('favoritesList');
-      wrap.innerHTML = '';
-      const favs = getFavorites();
-      if (!favs.length) {
-        const empty = document.createElement('div');
-        empty.className = 'text-sm text-slate-500';
-        empty.textContent = 'Noch keine Favoriten.';
-        wrap.appendChild(empty);
-        return;
-      }
-      favs.map(id => PROJECTS.find(p => p.id === id)).filter(Boolean).forEach(p => {
-        const btn = document.createElement('button');
-        btn.className = 'w-full text-left p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50';
-        btn.onclick = () => openDetail(p.id);
-        btn.innerHTML = `
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <div class="font-semibold truncate">${escapeHtml(p.icon)} ${escapeHtml(p.title || '—')}</div>
-              <div class="text-xs text-slate-500 mt-0.5 truncate">${escapeHtml(p.status || '—')} • ${escapeHtml(p.category || '—')}</div>
-            </div>
-            <div class="shrink-0 text-xs font-semibold text-slate-600">${formatEUR(p.budgetEUR)}</div>
-          </div>
-        `;
-        wrap.appendChild(btn);
+    function createProjectIcon(p) {
+      const color = markerColor(p.progress);
+      return L.divIcon({
+        className: '',
+        html: `<div style="background:${color};width:16px;height:16px;border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+        popupAnchor: [0, -10]
       });
-    }
-
-    function renderList() {
-      const list = document.getElementById('projectList');
-      const results = filteredProjects();
-      const favs = new Set(getFavorites());
-
-      const sorted = [...results].sort((a, b) => {
-        const af = favs.has(a.id) ? 0 : 1;
-        const bf = favs.has(b.id) ? 0 : 1;
-        if (af !== bf) return af - bf;
-        return (a.title || '').localeCompare(b.title || '', 'de');
-      });
-
-      document.getElementById('resultCount').textContent = `${sorted.length} Projekte`;
-      list.innerHTML = '';
-
-      sorted.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-sm transition-shadow';
-        card.innerHTML = `
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <div class="text-xs text-slate-500">${escapeHtml(p.category || '—')}</div>
-              <div class="font-bold mt-1 truncate">${escapeHtml(p.icon)} ${escapeHtml(p.title || '—')}</div>
-              <div class="text-sm text-slate-600 mt-1 line-clamp-2">${escapeHtml(p.short || '')}</div>
-            </div>
-            <button class="shrink-0 text-sm font-semibold rounded-lg px-2.5 py-1.5 border ${isFavorite(p.id) ? 'bg-wb-primary text-white border-wb-primary' : 'bg-white text-slate-700 border-slate-200 hover:bg-wb-soft'}"
-              title="Favorit (max. 3)"
-              aria-label="Favorit"
-              onclick="event.stopPropagation(); toggleFavorite('${escapeAttr(p.id)}')">
-              ${isFavorite(p.id) ? '★' : '☆'}
-            </button>
-          </div>
-          <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
-            <span class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700">${escapeHtml(p.status || '—')}</span>
-            <span class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700">${formatEUR(p.budgetEUR)}</span>
-            ${p.address ? `<span class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700 truncate max-w-[260px]">${escapeHtml(p.address)}</span>` : ''}
-          </div>
-          <div class="mt-4 flex gap-2">
-            <button class="flex-1 text-sm font-semibold bg-slate-900 text-white rounded-xl py-2.5 hover:bg-slate-800"
-              onclick="openDetail('${escapeAttr(p.id)}')">Details</button>
-            <button class="text-sm font-semibold bg-white border border-slate-200 rounded-xl px-3 hover:bg-slate-50"
-              onclick="event.stopPropagation(); focusOnMap('${escapeAttr(p.id)}')">🗺️</button>
-          </div>
-        `;
-        list.appendChild(card);
-      });
-    }
-
-    function renderFilters() {
-      const sel = document.getElementById('statusFilter');
-      const cur = sel.value;
-      const statuses = Array.from(new Set(PROJECTS.map(p => p.status).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'de'));
-      sel.innerHTML = '<option value="">Alle Status</option>' + statuses.map(s => `<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`).join('');
-      sel.value = statuses.includes(cur) ? cur : '';
     }
 
     function renderMapMarkers() {
@@ -1407,24 +1206,91 @@
       markersById.forEach(m => m.remove());
       markersById = new Map();
 
-      PROJECTS.forEach(p => {
+      const visible = filteredProjects();
+      visible.forEach(p => {
         if (!(Number.isFinite(p.lat) && Number.isFinite(p.lng))) return;
-        const marker = L.marker([p.lat, p.lng]).addTo(map);
-        marker.bindPopup(`<div class="font-semibold">${escapeHtml(p.icon)} ${escapeHtml(p.title || '—')}</div><div class="text-xs text-slate-600">${escapeHtml(p.status || '')}</div>`);
-        marker.on('click', () => openDetail(p.id));
+        const marker = L.marker([p.lat, p.lng], { icon: createProjectIcon(p) }).addTo(map);
+        const pm = progressMeta(p.progress);
+        const popupHtml = `
+          <div class="min-w-[200px]">
+            <div class="font-semibold text-slate-900">${escapeHtml(p.title || '—')}</div>
+            <div class="mt-2 flex items-center gap-2">
+              <span class="inline-block w-3 h-3 rounded-full ${pm.dot}"></span>
+              <span class="text-sm text-slate-700">Ampel: ${escapeHtml(pm.label)}</span>
+            </div>
+            <button type="button"
+              class="mt-3 w-full text-sm font-semibold bg-wb-primary text-white rounded-lg px-3 py-2 hover:bg-wb-primary2"
+              onclick="openDetail('${escapeAttr(p.id)}')">Mehr Details</button>
+          </div>`;
+        marker.bindPopup(popupHtml);
         markersById.set(p.id, marker);
+      });
+
+      const countEl = document.getElementById('mapResultCount');
+      if (countEl) {
+        const onMap = visible.filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng)).length;
+        countEl.textContent = `${onMap} Projekt${onMap === 1 ? '' : 'e'} auf der Karte`;
+      }
+    }
+
+    function renderFilters() {
+      const statusSel = document.getElementById('statusFilter');
+      if (statusSel) {
+        const curStatus = statusSel.value;
+        const statuses = Array.from(new Set(PROJECTS.map(p => p.status).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'de'));
+        statusSel.innerHTML = '<option value="">Alle Status</option>' + statuses.map(s => `<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`).join('');
+        statusSel.value = statuses.includes(curStatus) ? curStatus : '';
+      }
+
+      const typeSel = document.getElementById('typeFilter');
+      if (typeSel) {
+        const curType = typeSel.value;
+        const types = Array.from(new Set(PROJECTS.map(p => p.projectType).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'de'));
+        typeSel.innerHTML = '<option value="">Alle Arten</option>' + types.map(t => `<option value="${escapeAttr(t)}">${escapeHtml(t)}</option>`).join('');
+        typeSel.value = types.includes(curType) ? curType : '';
+      }
+    }
+
+    function renderList() {
+      const list = document.getElementById('projectList');
+      if (!list) return;
+      const results = filteredProjects();
+
+      const sorted = [...results].sort((a, b) =>
+        (a.title || '').localeCompare(b.title || '', 'de')
+      );
+
+      const countEl = document.getElementById('resultCount');
+      if (countEl) countEl.textContent = `${sorted.length} Projekte`;
+
+      list.innerHTML = '';
+
+      sorted.forEach(p => {
+        const pm = progressMeta(p.progress);
+        const shortOneLine = (p.short || '').trim().split(/(?<=[.!?])\s+/)[0] || '—';
+        const card = document.createElement('div');
+        card.className = 'bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-sm transition-shadow';
+        card.innerHTML = `
+          <div class="font-bold text-slate-900 leading-snug">${escapeHtml(p.title || '—')}</div>
+          <div class="mt-2 flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded-full shrink-0 ${pm.dot}"></span>
+            <span class="text-sm text-slate-700">Ampel: ${escapeHtml(pm.label)}</span>
+          </div>
+          <p class="mt-3 text-sm text-slate-600 line-clamp-1">${escapeHtml(shortOneLine)}</p>
+          <button type="button"
+            class="mt-4 w-full text-sm font-semibold bg-wb-primary text-white rounded-xl py-2.5 hover:bg-wb-primary2"
+            onclick="openDetail('${escapeAttr(p.id)}')">Mehr Details</button>
+        `;
+        list.appendChild(card);
       });
     }
 
     function render() {
       if (APP_MODE !== 'citizen') return;
       renderFilters();
-      renderFavorites();
-      renderQuickSelect();
-      renderAppChat();
-      renderCitizenProposals();
-      renderList();
       renderMapMarkers();
+      renderList();
+      renderCitizenProposals();
     }
 
     function formatForInput(v) {
@@ -1573,14 +1439,21 @@
 
       document.getElementById('search').addEventListener('input', render);
       document.getElementById('statusFilter').addEventListener('change', render);
+      document.getElementById('typeFilter').addEventListener('change', render);
 
       setMode('citizen');
+      ensureMap();
+      initBeforeAfterDrag();
+      setTimeout(() => map && map.invalidateSize(), 100);
     }
 
     init().catch(err => {
       console.error(err);
       alert('Fehler beim Laden von projekte.json. Prüfe die JSON-Syntax.');
     });
+  </script>
+  <script>
+(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="XJeezMEwr59tgsmZcmctB";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
   </script>
 </body>
 </html>
